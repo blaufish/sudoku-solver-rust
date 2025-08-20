@@ -3,6 +3,33 @@ use std::io;
 use std::io::Error;
 use std::io::ErrorKind;
 
+struct Sudoku {
+    board: [[char; 16]; 16],
+    dimensions: usize,
+}
+
+impl Sudoku {
+    fn new(dimensions: usize) -> Sudoku {
+        Sudoku {
+            board: [['X'; 16]; 16],
+            dimensions: dimensions,
+        }
+    }
+    fn fill(&mut self, v: Vec<String>) {
+        for (row, s) in v.iter().enumerate() {
+            if row >= self.dimensions {
+                continue;
+            }
+            for (col, c) in s.chars().enumerate() {
+                if col >= self.dimensions {
+                    continue;
+                }
+                self.board[row][col] = c;
+            }
+        }
+    }
+}
+
 fn validate_chars(hw: usize, v: Vec<String>) -> io::Result<()> {
     let valid_chars_s = &"_0123456789ABCDEF"[..(hw + 1)];
     //let valid_chars = valid_chars_s.chars();
@@ -23,8 +50,8 @@ fn main() -> io::Result<()> {
 
     println!("File contents:\n{}", contents);
 
-    let mut height = 0;
-    let mut width = 0;
+    let mut height: usize = 0;
+    let mut width: usize = 0;
     let mut data: Vec<String> = Vec::new();
 
     let mut lines = contents.lines();
@@ -49,7 +76,9 @@ fn main() -> io::Result<()> {
     if width != height {
         return Err(Error::new(ErrorKind::Other, "Width and Height missmatch"));
     }
-    validate_chars(width, data)?;
+    validate_chars(width, data.clone())?;
+    let mut sudoku: Sudoku = Sudoku::new(width);
+    sudoku.fill(data);
 
     Ok(())
 }
