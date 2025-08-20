@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs;
 use std::io;
 use std::io::Error;
@@ -10,7 +11,7 @@ struct Moves {
     chars: String,
 }
 
-fn sort_moves(unsorted: Vec<Moves>) -> Vec<Moves> {
+fn _sort_moves(unsorted: Vec<Moves>) -> Vec<Moves> {
     let mut sorted: Vec<Moves> = Vec::new();
     let mut max = 0;
     for v in unsorted.clone() {
@@ -31,6 +32,70 @@ fn sort_moves(unsorted: Vec<Moves>) -> Vec<Moves> {
         }
     }
     sorted
+}
+
+//setify...
+fn uniq(v: Vec<String>) -> Vec<String> {
+    let mut vv: Vec<String> = Vec::new();
+    for s in v {
+        if vv.contains(&s) {
+            continue;
+        }
+        vv.push(s);
+    }
+    vv
+}
+
+struct Permuter {
+    map: HashMap<String, Vec<String>>,
+}
+
+impl Permuter {
+    fn new() -> Permuter {
+        Permuter {
+            map: HashMap::new(),
+        }
+    }
+    fn permute(&mut self, s: String) -> Vec<String> {
+        //println!("permute: <{}>", s);
+        let mut vv: Vec<String> = Vec::new();
+        if s.len() == 0 {
+            return vv;
+        }
+        if s.len() == 1 {
+            vv.push(s);
+            return vv;
+        }
+        let cached = self.map.get(&s);
+        if let Some(value) = cached {
+            return value.to_vec();
+        }
+        for i in 0..s.len() {
+            let left = s.chars().nth(i).unwrap();
+            let mut right: String = String::from("");
+            for j in 0..s.len() {
+                if i == j {
+                    continue;
+                }
+                right = right + &s.chars().nth(j).unwrap().to_string();
+            }
+            if right.len() == 0 {
+                vv.push(left.to_string());
+            } else {
+                for ss in self.permute(right.to_string()) {
+                    vv.push(left.to_string() + &ss);
+                }
+            }
+        }
+        vv = uniq(vv);
+        self.map.insert(s, vv.clone());
+        return vv;
+    }
+}
+
+fn permute(s: String) -> Vec<String> {
+    let mut p = Permuter::new();
+    return p.permute(s);
 }
 
 struct Sudoku {
@@ -58,7 +123,7 @@ impl Sudoku {
             }
         }
     }
-    fn is_solved(&self) -> bool {
+    fn backtrack_is_solved(&self) -> bool {
         for row in 0..self.dimensions {
             for col in 0..self.dimensions {
                 if '_' == self.board[row][col] {
@@ -94,14 +159,15 @@ impl Sudoku {
         }
         Some(v)
     }
-    fn solve(&mut self) -> bool {
-        if self.is_solved() {
+    fn backtrack_solve(&mut self) -> bool {
+        if self.backtrack_is_solved() {
             return true;
         }
         match self.possible_moves() {
             None => false,
             Some(moves_unsorted) => {
-                let moves = sort_moves(moves_unsorted);
+                //let moves = sort_moves(moves_unsorted);
+                let moves = moves_unsorted;
                 //println!("Moves: {}", moves.len());
                 for m in moves {
                     for c in m.chars.chars() {
@@ -116,6 +182,43 @@ impl Sudoku {
                 return false;
             }
         }
+    }
+
+    fn permutation_solve(&mut self) -> bool {
+        let mut map: HashMap<String, usize> = HashMap::new();
+        for row in 0..self.dimensions {
+            for col in 0..self.dimensions {
+                let number = self.board[row][col];
+                if '_' == number {
+                    continue;
+                }
+                let number_s = number.to_string();
+                let mut count: usize = match map.get(&number_s) {
+                    Some(value) => *value,
+                    None => 0,
+                };
+                count = count + 1;
+                map.insert(number_s, count);
+            }
+        }
+        let valid_chars = &"0123456789ABCDEF"[..self.dimensions];
+        let mut unplaced: String = "".to_string();
+        for c in valid_chars.chars() {
+            let number_s = c.to_string();
+            let count = map.get(&number_s).copied().unwrap_or(0);
+            for _i in 0..(self.dimensions - count) {
+                unplaced = unplaced + &c.to_string();
+            }
+        }
+        println!("unplaced: {}", unplaced);
+        for s in permute(unplaced) {
+            println!("s: {}", s);
+        }
+        return false;
+    }
+
+    fn solve(&mut self) -> bool {
+        return self.permutation_solve();
     }
 }
 
@@ -132,7 +235,15 @@ fn validate_chars(hw: usize, v: Vec<String>) -> io::Result<()> {
     Ok(())
 }
 
+fn debug() {
+    let v = permute("abcdefgh".to_string());
+    for s in v {
+        println!("debug: {}", s);
+    }
+}
+
 fn main() -> io::Result<()> {
+    debug();
     let file_path = "challenge.txt";
 
     let contents = fs::read_to_string(file_path)?;
@@ -166,8 +277,9 @@ fn main() -> io::Result<()> {
         return Err(Error::new(ErrorKind::Other, "Width and Height missmatch"));
     }
     validate_chars(width, data.clone())?;
+
     let mut sudoku: Sudoku = Sudoku::new(width);
-    sudoku.fill(data);
+    sudoku.fill(data.clone());
     let solved = sudoku.solve();
     println!("solved: <{}>", solved);
 
