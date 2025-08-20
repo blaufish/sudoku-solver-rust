@@ -47,55 +47,73 @@ fn uniq(v: Vec<String>) -> Vec<String> {
 }
 
 struct Permuter {
-    map: HashMap<String, Vec<String>>,
+    original: String,
+    emitted: Vec<String>,
+    first: bool,
+    permutation: usize,
 }
 
+fn reduce_soup(soup: String, index: usize) -> (String, char) {
+    let mut s = String::from("");
+    let mut cc = '#';
+    for (i, c) in soup.chars().enumerate() {
+        if i == index {
+            cc = c;
+            continue;
+        }
+        s = s + &c.to_string();
+    }
+    return (s, cc);
+}
 impl Permuter {
-    fn new() -> Permuter {
+    fn new(s: String) -> Permuter {
         Permuter {
-            map: HashMap::new(),
+            original: s,
+            emitted: Vec::new(),
+            first: true,
+            permutation: 0,
         }
     }
-    fn permute(&mut self, s: String) -> Vec<String> {
-        //println!("permute: <{}>", s);
-        let mut vv: Vec<String> = Vec::new();
-        if s.len() == 0 {
-            return vv;
+    fn permutation_to_string(&self) -> Option<String> {
+        let mut p = self.permutation;
+        let mut radix = self.original.len();
+        let mut soup = self.original.clone();
+        let mut s = String::from("");
+        for _i in 0..self.original.len() {
+            let index = p % radix;
+            p = p / radix;
+            let (reduced_soup, c) = reduce_soup(soup, index);
+            s = s + &c.to_string();
+            soup = reduced_soup;
+            radix = radix - 1;
         }
-        if s.len() == 1 {
-            vv.push(s);
-            return vv;
+        if p == 0 {
+            return Some(s);
         }
-        let cached = self.map.get(&s);
-        if let Some(value) = cached {
-            return value.to_vec();
-        }
-        for i in 0..s.len() {
-            let left = s.chars().nth(i).unwrap();
-            let mut right: String = String::from("");
-            for j in 0..s.len() {
-                if i == j {
-                    continue;
-                }
-                right = right + &s.chars().nth(j).unwrap().to_string();
-            }
-            if right.len() == 0 {
-                vv.push(left.to_string());
-            } else {
-                for ss in self.permute(right.to_string()) {
-                    vv.push(left.to_string() + &ss);
-                }
-            }
-        }
-        vv = uniq(vv);
-        self.map.insert(s, vv.clone());
-        return vv;
+        None
     }
-}
-
-fn permute(s: String) -> Vec<String> {
-    let mut p = Permuter::new();
-    return p.permute(s);
+    fn next(&mut self) -> Option<String> {
+        if self.first {
+            self.first = false;
+            self.permutation = 0;
+            self.emitted.push(self.original.clone());
+            return Some(self.original.clone());
+        }
+        loop {
+            self.permutation = self.permutation + 1;
+            let permuted = self.permutation_to_string();
+            match permuted {
+                Some(s) => {
+                    if self.emitted.contains(&s) {
+                        continue;
+                    }
+                    self.emitted.push(s.clone());
+                    return Some(s);
+                }
+                None => return None,
+            }
+        }
+    }
 }
 
 struct Sudoku {
@@ -211,8 +229,40 @@ impl Sudoku {
             }
         }
         println!("unplaced: {}", unplaced);
-        for s in permute(unplaced) {
-            println!("s: {}", s);
+        let mut permutator = Permuter::new(unplaced);
+        let board = self.board.clone();
+        'outer: while let Some(s) = permutator.next() {
+            self.board = board.clone();
+            //println!("s: {}", s);
+            let mut i = 0;
+            for row in 0..self.dimensions {
+                for col in 0..self.dimensions {
+                    if self.board[row][col] != '_' {
+                        continue;
+                    }
+                    match s.chars().nth(i) {
+                        None => {
+                            println!("no char: {}", i);
+                            return false;
+                        }
+                        Some(c) => {
+                            for row2 in 0..self.dimensions {
+                                if self.board[row2][col] == c {
+                                    continue 'outer;
+                                }
+                            }
+                            for col2 in 0..self.dimensions {
+                                if self.board[row][col2] == c {
+                                    continue 'outer;
+                                }
+                            }
+                            self.board[row][col] = c;
+                        }
+                    }
+                    i = i + 1;
+                }
+            }
+            return true;
         }
         return false;
     }
@@ -236,8 +286,19 @@ fn validate_chars(hw: usize, v: Vec<String>) -> io::Result<()> {
 }
 
 fn debug() {
-    let v = permute("abcdefgh".to_string());
-    for s in v {
+    debug1();
+    debug2();
+}
+
+fn debug1() {
+    let mut p = Permuter::new("abcde".to_string());
+    while let Some(s) = p.next() {
+        println!("debug: {}", s);
+    }
+}
+fn debug2() {
+    let mut p = Permuter::new("aab".to_string());
+    while let Some(s) = p.next() {
         println!("debug: {}", s);
     }
 }
