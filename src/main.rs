@@ -3,6 +3,36 @@ use std::io;
 use std::io::Error;
 use std::io::ErrorKind;
 
+#[derive(Clone)]
+struct Moves {
+    row: usize,
+    col: usize,
+    chars: String,
+}
+
+fn sort_moves( unsorted : Vec<Moves> ) -> Vec<Moves> {
+    let mut sorted : Vec<Moves> = Vec::new();
+    let mut max = 0;
+    for v in unsorted.clone() {
+        let len = v.chars.len();
+        if len == 0 {
+            // this path is f'ed up, abort early
+            return sorted;
+        }
+        if len > max {
+            max = len;
+        }
+    }
+    for len in 0..(max+1) {
+        for v in unsorted.clone() {
+            if v.chars.len() == len {
+                sorted.push(v)
+            }
+        }
+    }
+    sorted
+}
+
 struct Sudoku {
     board: [[char; 16]; 16],
     dimensions: usize,
@@ -27,6 +57,58 @@ impl Sudoku {
                 self.board[row][col] = c;
             }
         }
+    }
+    fn is_solved(&self) -> bool {
+        for row in 0..self.dimensions {
+            for col in 0..self.dimensions {
+                if '_' == self.board[row][col] {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    fn possible_moves(&self) -> Vec<Moves> {
+        let mut v : Vec<Moves> = Vec::new();
+        for row in 0..self.dimensions {
+            for col in 0..self.dimensions {
+                if '_' != self.board[row][col] {
+                    continue;
+                }
+                let mut m : Moves = Moves {
+                    row : row,
+                    col : col,
+                    chars : (&"0123456789ABCDEF"[..self.dimensions]).to_string()
+                };
+                for r in 0..self.dimensions {
+                    m.chars = m.chars.replace(self.board[r][col], "");
+                }
+                for c in 0..self.dimensions {
+                    m.chars = m.chars.replace(self.board[row][c], "");
+                }
+                v.push(m);
+            }
+        }
+        v
+    }
+    fn solve(&mut self) -> bool {
+        if self.is_solved() {
+            return true;
+        }
+        let moves_unsorted = self.possible_moves();
+        let moves = sort_moves(moves_unsorted);
+        //println!("Moves: {}", moves.len());
+        for m in moves {
+            for c in m.chars.chars() {
+                self.board[m.row][m.col] = c;
+                let solved = self.solve();
+                if solved {
+                    return true;
+                }
+                self.board[m.row][m.col] = '_';
+            }
+        }
+        return false
     }
 }
 
@@ -79,7 +161,15 @@ fn main() -> io::Result<()> {
     validate_chars(width, data.clone())?;
     let mut sudoku: Sudoku = Sudoku::new(width);
     sudoku.fill(data);
+    let solved = sudoku.solve();
+    println!("solved: <{}>", solved);
 
+    for row in 0..height {
+        for col in 0..width {
+            print!("{}", sudoku.board[row][col]);
+        }
+        println!("");
+    }
     Ok(())
 }
 
