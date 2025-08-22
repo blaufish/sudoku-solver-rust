@@ -151,6 +151,20 @@ impl Sudoku {
         }
         return true;
     }
+    fn valid_chars_row(&self, row: usize) -> String {
+        let mut chars = (&"0123456789ABCDEF"[..self.dimensions]).to_string();
+        for c in 0..self.dimensions {
+            chars = chars.replace(self.board[row][c], "");
+        }
+        return chars;
+    }
+    fn valid_chars_col(&self, col: usize) -> String {
+        let mut chars = (&"0123456789ABCDEF"[..self.dimensions]).to_string();
+        for r in 0..self.dimensions {
+            chars = chars.replace(self.board[r][col], "");
+        }
+        return chars;
+    }
     fn possible_moves(&self) -> Option<Vec<Moves>> {
         let mut v: Vec<Moves> = Vec::new();
         for row in 0..self.dimensions {
@@ -219,6 +233,7 @@ impl Sudoku {
                 map.insert(number_s, count);
             }
         }
+        /*
         let valid_chars = &"0123456789ABCDEF"[..self.dimensions];
         let mut unplaced: String = "".to_string();
         for c in valid_chars.chars() {
@@ -229,42 +244,51 @@ impl Sudoku {
             }
         }
         println!("unplaced: {}", unplaced);
-        let mut permutator = Permuter::new(unplaced);
+        */
+
         let board = self.board.clone();
-        'outer: while let Some(s) = permutator.next() {
-            self.board = board.clone();
-            //println!("s: {}", s);
-            let mut i = 0;
-            for row in 0..self.dimensions {
+        for row in 0..self.dimensions {
+            let valid_row = self.valid_chars_row(row);
+            println!("row {} valid characters: {}", row, valid_row);
+            let mut permutator = Permuter::new(valid_row);
+            'outer: while let Some(s) = permutator.next() {
+                //println!("{}", s);
+                //clean up any dirt
+                for r in row..self.dimensions {
+                    for c in 0..self.dimensions {
+                        self.board[r][c] = board[r][c];
+                    }
+                }
+                let mut i = 0;
                 for col in 0..self.dimensions {
-                    if self.board[row][col] != '_' {
+                    if '_' != self.board[row][col] {
                         continue;
                     }
+                    let valid_col = self.valid_chars_col(col);
+                    println!("row {} col {} valid characters: {}", row, col, valid_col);
                     match s.chars().nth(i) {
-                        None => {
-                            println!("no char: {}", i);
-                            return false;
-                        }
                         Some(c) => {
-                            for row2 in 0..self.dimensions {
-                                if self.board[row2][col] == c {
-                                    continue 'outer;
-                                }
-                            }
-                            for col2 in 0..self.dimensions {
-                                if self.board[row][col2] == c {
-                                    continue 'outer;
-                                }
+                            if !valid_col.contains(c) {
+                                continue 'outer;
                             }
                             self.board[row][col] = c;
+                            i = i + 1;
+                            println!("row {} col {} {}", row, col, c);
+                        }
+                        None => {
+                            println!("Error too few characters from permutation?");
+                            break 'outer;
                         }
                     }
-                    i = i + 1;
                 }
             }
-            return true;
+            for c in 0..self.dimensions {
+                if self.board[row][c] == '_' {
+                    break;
+                }
+            }
         }
-        return false;
+        return self.backtrack_is_solved();
     }
 
     fn solve(&mut self) -> bool {
