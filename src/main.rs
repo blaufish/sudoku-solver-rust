@@ -1,299 +1,49 @@
-use std::collections::HashMap;
+//use std::collections::HashMap;
 use std::fs;
 use std::io;
 use std::io::Error;
 use std::io::ErrorKind;
 
-#[derive(Clone)]
-struct Moves {
-    row: usize,
-    col: usize,
-    chars: String,
-}
+mod sudoku;
+use crate::sudoku::Sudoku;
 
-fn _sort_moves(unsorted: Vec<Moves>) -> Vec<Moves> {
-    let mut sorted: Vec<Moves> = Vec::new();
-    let mut max = 0;
-    for v in unsorted.clone() {
-        let len = v.chars.len();
-        if len == 0 {
-            // this path is f'ed up, abort early
-            return sorted;
-        }
-        if len > max {
-            max = len;
-        }
-    }
-    for len in 0..(max + 1) {
-        for v in unsorted.clone() {
-            if v.chars.len() == len {
-                sorted.push(v)
-            }
-        }
-    }
-    sorted
-}
-
-//setify...
-fn uniq(v: Vec<String>) -> Vec<String> {
-    let mut vv: Vec<String> = Vec::new();
-    for s in v {
-        if vv.contains(&s) {
-            continue;
-        }
-        vv.push(s);
-    }
-    vv
-}
-
-struct Permuter {
-    original: String,
-    emitted: Vec<String>,
-    first: bool,
-    permutation: usize,
-}
-
-fn reduce_soup(soup: String, index: usize) -> (String, char) {
-    let mut s = String::from("");
-    let mut cc = '#';
-    for (i, c) in soup.chars().enumerate() {
-        if i == index {
-            cc = c;
-            continue;
-        }
-        s = s + &c.to_string();
-    }
-    return (s, cc);
-}
-impl Permuter {
-    fn new(s: String) -> Permuter {
-        Permuter {
-            original: s,
-            emitted: Vec::new(),
-            first: true,
-            permutation: 0,
-        }
-    }
-    fn permutation_to_string(&self) -> Option<String> {
-        let mut p = self.permutation;
-        let mut radix = self.original.len();
-        let mut soup = self.original.clone();
-        let mut s = String::from("");
-        for _i in 0..self.original.len() {
-            let index = p % radix;
-            p = p / radix;
-            let (reduced_soup, c) = reduce_soup(soup, index);
-            s = s + &c.to_string();
-            soup = reduced_soup;
-            radix = radix - 1;
-        }
-        if p == 0 {
-            return Some(s);
-        }
-        None
-    }
-    fn next(&mut self) -> Option<String> {
-        if self.first {
-            self.first = false;
-            self.permutation = 0;
-            self.emitted.push(self.original.clone());
-            return Some(self.original.clone());
-        }
-        loop {
-            self.permutation = self.permutation + 1;
-            let permuted = self.permutation_to_string();
-            match permuted {
-                Some(s) => {
-                    if self.emitted.contains(&s) {
-                        continue;
-                    }
-                    self.emitted.push(s.clone());
-                    return Some(s);
-                }
-                None => return None,
-            }
-        }
-    }
-}
-
-struct Sudoku {
-    board: [[char; 16]; 16],
-    dimensions: usize,
-}
-
-impl Sudoku {
-    fn new(dimensions: usize) -> Sudoku {
-        Sudoku {
-            board: [['X'; 16]; 16],
-            dimensions: dimensions,
-        }
-    }
-    fn fill(&mut self, v: Vec<String>) {
-        for (row, s) in v.iter().enumerate() {
-            if row >= self.dimensions {
+fn solve(sudoku: &mut Sudoku) -> bool {
+    let mut solved = true;
+    for row in 0..sudoku.dimensions {
+        let utilized_row = sudoku.utilized_row(row);
+        for col in 0..sudoku.dimensions {
+            if sudoku.board[row][col] != 0 {
                 continue;
             }
-            for (col, c) in s.chars().enumerate() {
-                if col >= self.dimensions {
+            solved = false;
+            let utilized_col = sudoku.utilized_col(col);
+            let utilized_subsuqare = sudoku.utilized_subsuqare(row, col);
+            let utilized = utilized_row | utilized_col | utilized_subsuqare;
+            println!(
+                "sudoku.board[{}][{}] utilized: {} {} {} {}",
+                row, col, utilized, utilized_row, utilized_col, utilized_subsuqare
+            );
+            for i in 0..sudoku.dimensions + 1 {
+                let mut binary: u32 = 1 << i;
+                if binary & utilized != 0 {
+                    println!(
+                        "sudoku.board[{}][{}] Skip: {} {}",
+                        row, col, binary, utilized
+                    );
                     continue;
                 }
-                self.board[row][col] = c;
+                sudoku.board[row][col] = binary;
+                println!("sudoku.board[{}][{}] = {}", row, col, binary);
+                let recursive_solved = solve(sudoku);
+                if recursive_solved {
+                    return true;
+                }
+                sudoku.board[row][col] = 0;
+                binary = binary << 1;
             }
         }
     }
-    fn backtrack_is_solved(&self) -> bool {
-        for row in 0..self.dimensions {
-            for col in 0..self.dimensions {
-                if '_' == self.board[row][col] {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    fn valid_chars_row(&self, row: usize) -> String {
-        let mut chars = (&"0123456789ABCDEF"[..self.dimensions]).to_string();
-        for c in 0..self.dimensions {
-            chars = chars.replace(self.board[row][c], "");
-        }
-        return chars;
-    }
-    fn valid_chars_col(&self, col: usize) -> String {
-        let mut chars = (&"0123456789ABCDEF"[..self.dimensions]).to_string();
-        for r in 0..self.dimensions {
-            chars = chars.replace(self.board[r][col], "");
-        }
-        return chars;
-    }
-    fn possible_moves(&self) -> Option<Vec<Moves>> {
-        let mut v: Vec<Moves> = Vec::new();
-        for row in 0..self.dimensions {
-            for col in 0..self.dimensions {
-                if '_' != self.board[row][col] {
-                    continue;
-                }
-                let mut m: Moves = Moves {
-                    row: row,
-                    col: col,
-                    chars: (&"0123456789ABCDEF"[..self.dimensions]).to_string(),
-                };
-                for r in 0..self.dimensions {
-                    m.chars = m.chars.replace(self.board[r][col], "");
-                }
-                for c in 0..self.dimensions {
-                    m.chars = m.chars.replace(self.board[row][c], "");
-                }
-                if m.chars.len() == 0 {
-                    return None;
-                }
-                v.push(m);
-            }
-        }
-        Some(v)
-    }
-    fn backtrack_solve(&mut self) -> bool {
-        if self.backtrack_is_solved() {
-            return true;
-        }
-        match self.possible_moves() {
-            None => false,
-            Some(moves_unsorted) => {
-                //let moves = sort_moves(moves_unsorted);
-                let moves = moves_unsorted;
-                //println!("Moves: {}", moves.len());
-                for m in moves {
-                    for c in m.chars.chars() {
-                        self.board[m.row][m.col] = c;
-                        let solved = self.solve();
-                        if solved {
-                            return true;
-                        }
-                        self.board[m.row][m.col] = '_';
-                    }
-                }
-                return false;
-            }
-        }
-    }
-
-    fn permutation_solve(&mut self) -> bool {
-        let mut map: HashMap<String, usize> = HashMap::new();
-        for row in 0..self.dimensions {
-            for col in 0..self.dimensions {
-                let number = self.board[row][col];
-                if '_' == number {
-                    continue;
-                }
-                let number_s = number.to_string();
-                let mut count: usize = match map.get(&number_s) {
-                    Some(value) => *value,
-                    None => 0,
-                };
-                count = count + 1;
-                map.insert(number_s, count);
-            }
-        }
-        /*
-        let valid_chars = &"0123456789ABCDEF"[..self.dimensions];
-        let mut unplaced: String = "".to_string();
-        for c in valid_chars.chars() {
-            let number_s = c.to_string();
-            let count = map.get(&number_s).copied().unwrap_or(0);
-            for _i in 0..(self.dimensions - count) {
-                unplaced = unplaced + &c.to_string();
-            }
-        }
-        println!("unplaced: {}", unplaced);
-        */
-
-        let board = self.board.clone();
-        for row in 0..self.dimensions {
-            let valid_row = self.valid_chars_row(row);
-            println!("row {} valid characters: {}", row, valid_row);
-            let mut permutator = Permuter::new(valid_row);
-            'outer: while let Some(s) = permutator.next() {
-                //println!("{}", s);
-                //clean up any dirt
-                for r in row..self.dimensions {
-                    for c in 0..self.dimensions {
-                        self.board[r][c] = board[r][c];
-                    }
-                }
-                let mut i = 0;
-                for col in 0..self.dimensions {
-                    if '_' != self.board[row][col] {
-                        continue;
-                    }
-                    let valid_col = self.valid_chars_col(col);
-                    println!("row {} col {} valid characters: {}", row, col, valid_col);
-                    match s.chars().nth(i) {
-                        Some(c) => {
-                            if !valid_col.contains(c) {
-                                continue 'outer;
-                            }
-                            self.board[row][col] = c;
-                            i = i + 1;
-                            println!("row {} col {} {}", row, col, c);
-                        }
-                        None => {
-                            println!("Error too few characters from permutation?");
-                            break 'outer;
-                        }
-                    }
-                }
-            }
-            for c in 0..self.dimensions {
-                if self.board[row][c] == '_' {
-                    break;
-                }
-            }
-        }
-        return self.backtrack_is_solved();
-    }
-
-    fn solve(&mut self) -> bool {
-        return self.permutation_solve();
-    }
+    solved
 }
 
 fn validate_chars(hw: usize, v: Vec<String>) -> io::Result<()> {
@@ -309,26 +59,38 @@ fn validate_chars(hw: usize, v: Vec<String>) -> io::Result<()> {
     Ok(())
 }
 
-fn debug() {
-    debug1();
-    debug2();
-}
-
-fn debug1() {
-    let mut p = Permuter::new("abcde".to_string());
-    while let Some(s) = p.next() {
-        println!("debug: {}", s);
+fn charset_from_sudoku_vector(width: usize, v: Vec<String>) -> Option<String> {
+    let mut charset = String::from("");
+    for s in v {
+        for c in s.chars() {
+            if c == '_' {
+                continue;
+            }
+            if charset.contains(c) {
+                continue;
+            }
+            charset = charset + &c.to_string();
+        }
     }
-}
-fn debug2() {
-    let mut p = Permuter::new("aab".to_string());
-    while let Some(s) = p.next() {
-        println!("debug: {}", s);
+    if charset.len() > width {
+        return None;
     }
+    if charset.len() == width {
+        return Some(charset);
+    }
+    let valid_chars_s = "0123456789ABCDEF";
+    for c in valid_chars_s.chars() {
+        if !charset.contains(c) {
+            charset = charset + &c.to_string();
+            if charset.len() == width {
+                return Some(charset);
+            }
+        }
+    }
+    return None;
 }
 
 fn main() -> io::Result<()> {
-    debug();
     let file_path = "challenge.txt";
 
     let contents = fs::read_to_string(file_path)?;
@@ -363,20 +125,76 @@ fn main() -> io::Result<()> {
     }
     validate_chars(width, data.clone())?;
 
-    let mut sudoku: Sudoku = Sudoku::new(width);
+    let subsquare_height;
+    let subsquare_width;
+
+    match width {
+        1 => {
+            subsquare_height = 1;
+            subsquare_width = 1;
+        }
+        2 => {
+            subsquare_height = 2;
+            subsquare_width = 2;
+        }
+        3 => {
+            subsquare_height = 3;
+            subsquare_width = 3;
+        }
+        4 => {
+            subsquare_height = 2;
+            subsquare_width = 2;
+        }
+        6 => {
+            subsquare_height = 3;
+            subsquare_width = 2;
+        }
+        9 => {
+            subsquare_height = 3;
+            subsquare_width = 3;
+        }
+        16 => {
+            subsquare_height = 4;
+            subsquare_width = 4;
+        }
+        _ => {
+            return Err(Error::new(ErrorKind::Other, "Unknown sudoku type"));
+        }
+    }
+
+    let charset_opt = charset_from_sudoku_vector(width, data.clone());
+    let charset: String;
+    match charset_opt {
+        None => {
+            return Err(Error::new(
+                ErrorKind::Other,
+                "Cannot generate character set!",
+            ));
+        }
+        Some(cs) => charset = cs,
+    }
+    println!("subsquare_height: {}", subsquare_height);
+    println!("subsquare_width: {}", subsquare_width);
+    println!("charset: {}", charset);
+
+    let mut sudoku: Sudoku = Sudoku::new(width, subsquare_height, subsquare_width, charset);
     sudoku.fill(data.clone());
-    let solved = sudoku.solve();
-    println!("solved: <{}>", solved);
 
     for row in 0..height {
         for col in 0..width {
-            print!("{}", sudoku.board[row][col]);
+            print!("{}", sudoku.get_c(row, col));
         }
         println!("");
     }
+    println!("");
+    let solved = solve(&mut sudoku);
+    println!("Solved: {}", solved);
+    for row in 0..height {
+        for col in 0..width {
+            print!("{}", sudoku.get_c(row, col));
+        }
+        println!("");
+    }
+    println!("");
     Ok(())
 }
-
-//fn main() {
-//    println!("Hello, world!");
-//}
