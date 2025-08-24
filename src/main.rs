@@ -59,19 +59,6 @@ fn solve(sudoku: &mut Sudoku) -> bool {
     false
 }
 
-fn validate_chars(hw: usize, v: Vec<String>) -> io::Result<()> {
-    let valid_chars_s = &"_0123456789ABCDEF"[..(hw + 1)];
-    //let valid_chars = valid_chars_s.chars();
-    for s in v.iter() {
-        for c in s.chars() {
-            if !valid_chars_s.contains(c) {
-                return Err(Error::new(ErrorKind::Other, "Illegal character"));
-            }
-        }
-    }
-    Ok(())
-}
-
 fn printsudoku(sudoku: &Sudoku) {
     for row in 0..sudoku.dimensions {
         for col in 0..sudoku.dimensions {
