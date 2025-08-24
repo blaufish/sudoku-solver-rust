@@ -165,12 +165,16 @@ fn main() -> io::Result<()> {
             subsquare_width = 2;
         }
         6 => {
-            subsquare_height = 3;
-            subsquare_width = 2;
+            subsquare_height = 2;
+            subsquare_width = 3;
         }
         9 => {
             subsquare_height = 3;
             subsquare_width = 3;
+        }
+        12 => {
+            subsquare_height = 3;
+            subsquare_width = 4;
         }
         16 => {
             subsquare_height = 4;
