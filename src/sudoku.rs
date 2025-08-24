@@ -1,8 +1,8 @@
 pub struct Sudoku {
     pub board: [[u32; 16]; 16],
     pub dimensions: usize,
-    subsquare_height: usize,
-    subsquare_width: usize,
+    pub subsquare_height: usize,
+    pub subsquare_width: usize,
     character_set: String,
 }
 

@@ -72,6 +72,22 @@ fn validate_chars(hw: usize, v: Vec<String>) -> io::Result<()> {
     Ok(())
 }
 
+fn printsudoku(sudoku: &Sudoku) {
+    for row in 0..sudoku.dimensions {
+        for col in 0..sudoku.dimensions {
+            print!("{}", sudoku.get_c(row, col));
+            if (col % sudoku.subsquare_width) == sudoku.subsquare_width - 1 {
+                print!(" ");
+            }
+        }
+        println!("");
+        if (row % sudoku.subsquare_height) == sudoku.subsquare_height - 1 {
+            println!("");
+        }
+    }
+    println!("");
+}
+
 fn charset_from_sudoku_vector(width: usize, v: Vec<String>) -> Option<String> {
     let mut charset = String::from("");
     for s in v {
@@ -196,6 +212,8 @@ fn main() -> io::Result<()> {
     let mut sudoku: Sudoku = Sudoku::new(width, subsquare_height, subsquare_width, charset);
     sudoku.fill(data.clone());
 
+    printsudoku(&sudoku);
+    /*
     for row in 0..height {
         for col in 0..width {
             print!("{}", sudoku.get_c(row, col));
@@ -203,8 +221,11 @@ fn main() -> io::Result<()> {
         println!("");
     }
     println!("");
+    */
     let solved = solve(&mut sudoku);
     println!("Solved: {}", solved);
+    printsudoku(&sudoku);
+    /*
     for row in 0..height {
         for col in 0..width {
             print!("{}", sudoku.get_c(row, col));
@@ -212,5 +233,6 @@ fn main() -> io::Result<()> {
         println!("");
     }
     println!("");
+    */
     Ok(())
 }
