@@ -200,26 +200,8 @@ fn main() -> io::Result<()> {
     sudoku.fill(data.clone());
 
     printsudoku(&sudoku);
-    /*
-    for row in 0..height {
-        for col in 0..width {
-            print!("{}", sudoku.get_c(row, col));
-        }
-        println!("");
-    }
-    println!("");
-    */
     let solved = solve(&mut sudoku);
     println!("Solved: {}", solved);
     printsudoku(&sudoku);
-    /*
-    for row in 0..height {
-        for col in 0..width {
-            print!("{}", sudoku.get_c(row, col));
-        }
-        println!("");
-    }
-    println!("");
-    */
     Ok(())
 }
