@@ -9,41 +9,54 @@ use crate::sudoku::Sudoku;
 
 fn solve(sudoku: &mut Sudoku) -> bool {
     let mut solved = true;
-    for row in 0..sudoku.dimensions {
-        let utilized_row = sudoku.utilized_row(row);
-        for col in 0..sudoku.dimensions {
-            if sudoku.board[row][col] != 0 {
+    let mut row: usize = 0;
+    let mut col: usize = 0;
+
+    for r in 0..sudoku.dimensions {
+        for c in 0..sudoku.dimensions {
+            if sudoku.board[r][c] != 0 {
                 continue;
             }
             solved = false;
-            let utilized_col = sudoku.utilized_col(col);
-            let utilized_subsuqare = sudoku.utilized_subsuqare(row, col);
-            let utilized = utilized_row | utilized_col | utilized_subsuqare;
-            println!(
-                "sudoku.board[{}][{}] utilized: {} {} {} {}",
-                row, col, utilized, utilized_row, utilized_col, utilized_subsuqare
-            );
-            for i in 0..sudoku.dimensions + 1 {
-                let mut binary: u32 = 1 << i;
-                if binary & utilized != 0 {
-                    println!(
-                        "sudoku.board[{}][{}] Skip: {} {}",
-                        row, col, binary, utilized
-                    );
-                    continue;
-                }
-                sudoku.board[row][col] = binary;
-                println!("sudoku.board[{}][{}] = {}", row, col, binary);
-                let recursive_solved = solve(sudoku);
-                if recursive_solved {
-                    return true;
-                }
-                sudoku.board[row][col] = 0;
-                binary = binary << 1;
-            }
+            row = r;
+            col = c;
+            break;
         }
     }
-    solved
+    if solved {
+        return true;
+    }
+    let utilized_row = sudoku.utilized_row(row);
+    let utilized_col = sudoku.utilized_col(col);
+    let utilized_subsuqare = sudoku.utilized_subsuqare(row, col);
+    let utilized = utilized_row | utilized_col | utilized_subsuqare;
+    /*
+    println!(
+        "sudoku.board[{}][{}] utilized: {} {} {} {}",
+        row, col, utilized, utilized_row, utilized_col, utilized_subsuqare
+    );
+    */
+    for i in 0..sudoku.dimensions {
+        let binary: u32 = 1 << i;
+        if binary & utilized != 0 {
+            /*
+            println!(
+                "sudoku.board[{}][{}] Skip: {} {}",
+                row, col, binary, utilized
+            );
+            */
+            continue;
+        }
+        sudoku.board[row][col] = binary;
+        //println!("sudoku.board[{}][{}] = {}", row, col, binary);
+        let recursive_solved = solve(sudoku);
+        if recursive_solved {
+            return true;
+        } else {
+            sudoku.board[row][col] = 0;
+        }
+    }
+    false
 }
 
 fn validate_chars(hw: usize, v: Vec<String>) -> io::Result<()> {
@@ -64,6 +77,9 @@ fn charset_from_sudoku_vector(width: usize, v: Vec<String>) -> Option<String> {
     for s in v {
         for c in s.chars() {
             if c == '_' {
+                continue;
+            }
+            if c == '.' {
                 continue;
             }
             if charset.contains(c) {
@@ -123,7 +139,7 @@ fn main() -> io::Result<()> {
     if width != height {
         return Err(Error::new(ErrorKind::Other, "Width and Height missmatch"));
     }
-    validate_chars(width, data.clone())?;
+    //validate_chars(width, data.clone())?;
 
     let subsquare_height;
     let subsquare_width;
