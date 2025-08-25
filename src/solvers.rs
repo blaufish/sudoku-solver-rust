@@ -35,11 +35,11 @@ impl Table {
             self.rows[i] = sudoku.utilized_row(i);
             self.cols[i] = sudoku.utilized_col(i);
         }
-        for r in 0..(sudoku.dimensions / sudoku.subsquare_height) {
-            for c in 0..(sudoku.dimensions / sudoku.subsquare_width) {
-                let row = r * sudoku.subsquare_height;
-                let col = c * sudoku.subsquare_width;
-                self.grids[r][c] = sudoku.utilized_subsuqare(row, col);
+        for r in 0..(sudoku.dimensions / sudoku.grid_height) {
+            for c in 0..(sudoku.dimensions / sudoku.grid_width) {
+                let row = r * sudoku.grid_height;
+                let col = c * sudoku.grid_width;
+                self.grids[r][c] = sudoku.utilized_grid(row, col);
             }
         }
     }
@@ -72,10 +72,10 @@ fn solve_faster_inner(sudoku: &mut sudoku::Sudoku, table: &mut Table) -> bool {
     }
     let utilized_row = table.rows[row];
     let utilized_col = table.cols[col];
-    let grid_row = row / sudoku.subsquare_height;
-    let grid_col = col / sudoku.subsquare_width;
-    let utilized_subsuqare = table.grids[grid_row][grid_col];
-    let utilized = utilized_row | utilized_col | utilized_subsuqare;
+    let grid_row = row / sudoku.grid_height;
+    let grid_col = col / sudoku.grid_width;
+    let utilized_grid = table.grids[grid_row][grid_col];
+    let utilized = utilized_row | utilized_col | utilized_grid;
     for i in 0..sudoku.dimensions {
         let binary: u32 = 1 << i;
         if binary & utilized != 0 {
@@ -121,8 +121,8 @@ fn solve_basic(sudoku: &mut sudoku::Sudoku) -> bool {
     }
     let utilized_row = sudoku.utilized_row(row);
     let utilized_col = sudoku.utilized_col(col);
-    let utilized_subsuqare = sudoku.utilized_subsuqare(row, col);
-    let utilized = utilized_row | utilized_col | utilized_subsuqare;
+    let utilized_grid = sudoku.utilized_grid(row, col);
+    let utilized = utilized_row | utilized_col | utilized_grid;
     for i in 0..sudoku.dimensions {
         let binary: u32 = 1 << i;
         if binary & utilized != 0 {

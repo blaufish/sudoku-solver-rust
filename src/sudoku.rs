@@ -1,23 +1,24 @@
+#[derive(Clone)]
 pub struct Sudoku {
     pub board: [[u32; 16]; 16],
     pub dimensions: usize,
-    pub subsquare_height: usize,
-    pub subsquare_width: usize,
+    pub grid_height: usize,
+    pub grid_width: usize,
     character_set: String,
 }
 
 impl Sudoku {
     pub fn new(
         dimensions: usize,
-        subsquare_height: usize,
-        subsquare_width: usize,
+        grid_height: usize,
+        grid_width: usize,
         character_set: String,
     ) -> Sudoku {
         Sudoku {
             board: [[0; 16]; 16],
             dimensions: dimensions,
-            subsquare_height: subsquare_height,
-            subsquare_width: subsquare_width,
+            grid_height: grid_height,
+            grid_width: grid_width,
             character_set: character_set,
         }
     }
@@ -69,12 +70,12 @@ impl Sudoku {
         }
         return binary;
     }
-    pub fn utilized_subsuqare(&self, row: usize, col: usize) -> u32 {
+    pub fn utilized_grid(&self, row: usize, col: usize) -> u32 {
         let mut binary: u32 = 0;
-        let start_row: usize = (row / self.subsquare_height) * self.subsquare_height;
-        let start_col: usize = (col / self.subsquare_width) * self.subsquare_width;
-        let end_row = start_row + self.subsquare_height;
-        let end_col = start_col + self.subsquare_width;
+        let start_row: usize = (row / self.grid_height) * self.grid_height;
+        let start_col: usize = (col / self.grid_width) * self.grid_width;
+        let end_row = start_row + self.grid_height;
+        let end_col = start_col + self.grid_width;
 
         for r in start_row..end_row {
             for c in start_col..end_col {
@@ -89,7 +90,7 @@ impl Sudoku {
         for row in 0..self.dimensions {
             for col in 0..self.dimensions {
                 s += &String::from(self.get_c(row, col));
-                if (col % self.subsquare_width) != self.subsquare_width - 1 {
+                if (col % self.grid_width) != self.grid_width - 1 {
                     continue;
                 }
                 if col == self.dimensions - 1 {
@@ -102,7 +103,7 @@ impl Sudoku {
                 break;
             }
             s += "\n";
-            if (row % self.subsquare_height) != self.subsquare_height - 1 {
+            if (row % self.grid_height) != self.grid_height - 1 {
                 continue;
             }
             s += "\n";

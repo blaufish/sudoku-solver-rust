@@ -4,6 +4,7 @@ use std::time::Instant;
 
 use clap::Parser;
 
+mod generator;
 mod helpers;
 mod solvers;
 mod sudoku;
@@ -11,18 +12,33 @@ mod sudoku;
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Args {
-    #[arg(short, long)]
-    file: std::path::PathBuf,
+    #[arg(short, long, default_value = None)]
+    file: Option<std::path::PathBuf>,
+
+    #[arg(long, default_value = "false")]
+    solve: bool,
+
+    #[arg(long, default_value = "false")]
+    generate: bool,
+
+    #[arg(long, default_value = "9")]
+    generate_size: usize,
+
+    #[arg(long, default_value = "3")]
+    generate_grid_width: usize,
+
+    #[arg(long, default_value = "3")]
+    generate_grid_height: usize,
+
+    #[arg(long, default_value = "123456789")]
+    generate_charset: String,
 
     #[arg(long, default_value = None)]
-    strategy: Option<String>,
+    solve_strategy: Option<String>,
 }
 
-fn main() -> io::Result<()> {
-    let args = Args::parse();
-    let strategy = args.strategy.as_deref();
-
-    let contents = fs::read_to_string(args.file)?;
+fn operation_solve(file: std::path::PathBuf, solve_strategy: Option<String>) -> io::Result<()> {
+    let contents = fs::read_to_string(file)?;
 
     println!("File contents:\n{}", contents);
 
@@ -31,12 +47,43 @@ fn main() -> io::Result<()> {
     println!("{}", &sudoku.to_string());
 
     let start = Instant::now();
-    let solved = solvers::solve(&mut sudoku, strategy);
+    let solved = solvers::solve(&mut sudoku, solve_strategy.as_deref());
     let duration = start.elapsed();
     println!("Time elapsed: {:?}", duration);
 
     println!("Solved: {}", solved);
     println!("{}", &sudoku.to_string());
+    Ok(())
+}
+
+fn operation_generate(generator: generator::Generator) {
+    if !generator.validate_generator() {
+        return ();
+    }
+    generator::generate(&generator);
+}
+
+fn main() -> io::Result<()> {
+    let args = Args::parse();
+
+    if args.solve {
+        let strategy = args.solve_strategy;
+        match args.file {
+            Some(file) => operation_solve(file, strategy)?,
+            None => {
+                println!("Error: --file must be specified when using --solve");
+            }
+        }
+    }
+    if args.generate {
+        let generator = generator::Generator {
+            dimensions: args.generate_size,
+            grid_width: args.generate_grid_width,
+            grid_height: args.generate_grid_height,
+            charset: args.generate_charset,
+        };
+        operation_generate(generator);
+    }
     Ok(())
 }
 
