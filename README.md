@@ -17,6 +17,57 @@ Supported modes:
 |    6x6 |     3x2 | Asymetric, wide (more columns than rows) |
 |  12x12 |     4x3 | Asymetric, wide (more columns than rows) |
 
+## Usage
+
+`sudoku-solver-rust -h`
+
+``` plain
+Usage: sudoku-solver-rust [OPTIONS] --file <FILE>
+
+Options:
+  -f, --file <FILE>
+      --strategy <STRATEGY>
+  -h, --help                 Print help
+  -V, --version              Print version
+```
+
+`sudoku-solver-rust --file samples/challenge9x9.txt`
+
+``` plain
+Time elapsed: 12.459µs
+Solved: true
+875 160 342
+460 823 715
+321 574 068
+
+714 208 536
+632 451 807
+508 736 421
+
+186 347 250
+247 015 683
+053 682 174
+```
+
+`sudoku-solver-rust --file samples/challenge9x9_3.txt`
+
+``` plain
+Time elapsed: 94.575µs
+Solved: true
+🎌🐡💩 🐙🍕🌈 🎆🏠🍅
+🍕🌈🍅 🎆💩🏠 🐡🐙🎌
+🐙🎆🏠 🍅🐡🎌 🍕💩🌈
+
+🎆🎌🌈 🐡🏠🐙 💩🍅🍕
+🍅🏠🍕 💩🎌🎆 🌈🐡🐙
+🐡💩🐙 🌈🍅🍕 🎌🎆🏠
+
+🌈🐙🐡 🎌🎆🍅 🏠🍕💩
+💩🍕🎌 🏠🐙🐡 🍅🌈🎆
+🏠🍅🎆 🍕🌈💩 🐙🎌🐡
+```
+
+## Implementation details
 
 Internally represents the sudoku board as 2x2 array of `u32`.
 
