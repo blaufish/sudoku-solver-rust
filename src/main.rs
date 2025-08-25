@@ -1,5 +1,6 @@
 use std::fs;
 use std::io;
+use std::time::Instant;
 
 use clap::Parser;
 
@@ -29,8 +30,11 @@ fn main() -> io::Result<()> {
 
     helpers::printsudoku(&sudoku);
 
-
+    let start = Instant::now();
     let solved = solvers::solve(&mut sudoku, strategy);
+    let duration = start.elapsed();
+    println!("Time elapsed: {:?}", duration);
+
     println!("Solved: {}", solved);
     helpers::printsudoku(&sudoku);
     Ok(())
