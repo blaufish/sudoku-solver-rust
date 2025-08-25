@@ -83,4 +83,30 @@ impl Sudoku {
         }
         return binary;
     }
+
+    pub fn to_string(&self) -> String {
+        let mut s = String::from("");
+        for row in 0..self.dimensions {
+            for col in 0..self.dimensions {
+                s += &String::from(self.get_c(row, col));
+                if (col % self.subsquare_width) != self.subsquare_width - 1 {
+                    continue;
+                }
+                if col == self.dimensions - 1 {
+                    continue;
+                }
+                s = s + " ";
+            }
+
+            if row == self.dimensions - 1 {
+                break;
+            }
+            s += "\n";
+            if (row % self.subsquare_height) != self.subsquare_height - 1 {
+                continue;
+            }
+            s += "\n";
+        }
+        s
+    }
 }

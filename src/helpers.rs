@@ -125,19 +125,3 @@ fn charset_from_sudoku_vector(width: usize, v: Vec<String>) -> Option<String> {
     }
     return None;
 }
-
-pub fn printsudoku(sudoku: &sudoku::Sudoku) {
-    for row in 0..sudoku.dimensions {
-        for col in 0..sudoku.dimensions {
-            print!("{}", sudoku.get_c(row, col));
-            if (col % sudoku.subsquare_width) == sudoku.subsquare_width - 1 {
-                print!(" ");
-            }
-        }
-        println!("");
-        if (row % sudoku.subsquare_height) == sudoku.subsquare_height - 1 {
-            println!("");
-        }
-    }
-    println!("");
-}
