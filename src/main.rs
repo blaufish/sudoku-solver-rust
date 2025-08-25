@@ -1,13 +1,11 @@
-//use std::collections::HashMap;
 use std::fs;
 use std::io;
 use std::io::Error;
 use std::io::ErrorKind;
 
 mod sudoku;
-use crate::sudoku::Sudoku;
 
-fn solve(sudoku: &mut Sudoku) -> bool {
+fn solve(sudoku: &mut sudoku::Sudoku) -> bool {
     let mut solved = true;
     let mut row: usize = 0;
     let mut col: usize = 0;
@@ -30,25 +28,12 @@ fn solve(sudoku: &mut Sudoku) -> bool {
     let utilized_col = sudoku.utilized_col(col);
     let utilized_subsuqare = sudoku.utilized_subsuqare(row, col);
     let utilized = utilized_row | utilized_col | utilized_subsuqare;
-    /*
-    println!(
-        "sudoku.board[{}][{}] utilized: {} {} {} {}",
-        row, col, utilized, utilized_row, utilized_col, utilized_subsuqare
-    );
-    */
     for i in 0..sudoku.dimensions {
         let binary: u32 = 1 << i;
         if binary & utilized != 0 {
-            /*
-            println!(
-                "sudoku.board[{}][{}] Skip: {} {}",
-                row, col, binary, utilized
-            );
-            */
             continue;
         }
         sudoku.board[row][col] = binary;
-        //println!("sudoku.board[{}][{}] = {}", row, col, binary);
         let recursive_solved = solve(sudoku);
         if recursive_solved {
             return true;
@@ -59,7 +44,7 @@ fn solve(sudoku: &mut Sudoku) -> bool {
     false
 }
 
-fn printsudoku(sudoku: &Sudoku) {
+fn printsudoku(sudoku: &sudoku::Sudoku) {
     for row in 0..sudoku.dimensions {
         for col in 0..sudoku.dimensions {
             print!("{}", sudoku.get_c(row, col));
@@ -200,7 +185,8 @@ fn main() -> io::Result<()> {
     println!("subsquare_width: {}", subsquare_width);
     println!("charset: {}", charset);
 
-    let mut sudoku: Sudoku = Sudoku::new(width, subsquare_height, subsquare_width, charset);
+    let mut sudoku: sudoku::Sudoku =
+        sudoku::Sudoku::new(width, subsquare_height, subsquare_width, charset);
     sudoku.fill(data.clone());
 
     printsudoku(&sudoku);
