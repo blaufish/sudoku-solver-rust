@@ -12,7 +12,7 @@ pub fn parse(contents: String) -> io::Result<sudoku::Sudoku> {
     let mut lines = contents.lines();
     while let Some(line) = lines.next() {
         let processed = line.trim().replace(" ", "");
-        let length = processed.len();
+        let length = processed.chars().count();
         if length == 0 {
             continue;
         }
@@ -23,7 +23,6 @@ pub fn parse(contents: String) -> io::Result<sudoku::Sudoku> {
                 return Err(Error::new(ErrorKind::Other, "Inconsistent line length"));
             }
         }
-        println!("Line: <{}>", processed);
         data.push(processed);
         height = height + 1;
     }
@@ -31,7 +30,6 @@ pub fn parse(contents: String) -> io::Result<sudoku::Sudoku> {
     if width != height {
         return Err(Error::new(ErrorKind::Other, "Width and Height missmatch"));
     }
-    //validate_chars(width, data.clone())?;
 
     let subsquare_height;
     let subsquare_width;
@@ -94,7 +92,7 @@ pub fn parse(contents: String) -> io::Result<sudoku::Sudoku> {
     Ok(sudoku)
 }
 
-pub fn charset_from_sudoku_vector(width: usize, v: Vec<String>) -> Option<String> {
+fn charset_from_sudoku_vector(width: usize, v: Vec<String>) -> Option<String> {
     let mut charset = String::from("");
     for s in v {
         for c in s.chars() {
@@ -110,17 +108,17 @@ pub fn charset_from_sudoku_vector(width: usize, v: Vec<String>) -> Option<String
             charset = charset + &c.to_string();
         }
     }
-    if charset.len() > width {
+    if charset.chars().count() > width {
         return None;
     }
-    if charset.len() == width {
+    if charset.chars().count() == width {
         return Some(charset);
     }
     let valid_chars_s = "0123456789ABCDEF";
     for c in valid_chars_s.chars() {
         if !charset.contains(c) {
             charset = charset + &c.to_string();
-            if charset.len() == width {
+            if charset.chars().count() == width {
                 return Some(charset);
             }
         }
