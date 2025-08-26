@@ -83,7 +83,10 @@ fn operation_generate(generator: generator::Generator, count: usize) {
 fn main() -> io::Result<()> {
     let args = Args::parse();
 
+    let mut unused = true;
+
     if args.solve {
+        unused = false;
         let strategy = args.solve_strategy;
         match args.file {
             Some(file) => operation_solve(file, strategy)?,
@@ -93,6 +96,7 @@ fn main() -> io::Result<()> {
         }
     }
     if args.generate {
+        unused = false;
         let generator = generator::Generator {
             dimensions: args.generate_size,
             grid_width: args.generate_grid_width,
@@ -100,6 +104,9 @@ fn main() -> io::Result<()> {
             charset: args.generate_charset,
         };
         operation_generate(generator, args.generate_count);
+    }
+    if unused {
+        println!("Error: No operation? -h for help, also try --solve, --generate");
     }
     Ok(())
 }
