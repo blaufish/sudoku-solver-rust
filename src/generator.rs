@@ -8,7 +8,6 @@ pub struct Generator {
     pub charset: String,
     pub threshold: usize,
     pub picks_per_solve: usize,
-    pub initial_randomized_cells: usize,
     pub kickstart_cells: usize,
 }
 
@@ -45,7 +44,7 @@ impl Generator {
     }
 }
 
-fn possible_binaries(sudoku: &sudoku::Sudoku, row: usize, col: usize) -> Vec<u32> {
+fn _possible_binaries(sudoku: &sudoku::Sudoku, row: usize, col: usize) -> Vec<u32> {
     let mut vec: Vec<u32> = Vec::new();
     let mut binary: u32 = 1;
     let utilized =
@@ -59,17 +58,65 @@ fn possible_binaries(sudoku: &sudoku::Sudoku, row: usize, col: usize) -> Vec<u32
     vec
 }
 
-fn get_diff(sudoku: &sudoku::Sudoku, solution : &sudoku::Sudoku) -> Vec<(usize, usize, u32)> {
+//find where alternatives deviates from the golden path.
+//suggest improvements to sudoku to approach the golden path
+fn get_diff(sudoku: &sudoku::Sudoku, golden: &sudoku::Sudoku, alternative : &sudoku::Sudoku) -> Vec<(usize, usize, u32)> {
     let mut diff: Vec<(usize, usize, u32)> = Vec::new();
     for row in 0..sudoku.dimensions {
         for col in 0..sudoku.dimensions {
             if sudoku.board[row][col] != 0 {
                 continue;
             }
-            diff.push((row, col, solution.board[row][col]));
+            if golden.board[row][col] == alternative.board[row][col] {
+                continue;
+            }
+            diff.push((row, col, golden.board[row][col]));
         }
     }
     diff
+}
+
+fn get_random_grid(dimensions: usize) -> Vec<u32>  {
+    let mut rng = rand::rng();
+    let mut vec : Vec<u32> = Vec::new();
+    let mut binary : u32 = 1;
+    for _i in 0..dimensions {
+        vec.push(binary);
+        binary = binary << 1;
+    }
+    _ = vec.shuffle(&mut rng);
+    return vec;
+}
+
+fn generate_golden(generator: &Generator) -> Option<sudoku::Sudoku> {
+    let mut sudoku = sudoku::Sudoku::new(
+        generator.dimensions,
+        generator.grid_height,
+        generator.grid_width,
+        generator.charset.clone(),
+    );
+    let grid_dim;
+    if generator.grid_width > generator.grid_height {
+        grid_dim = generator.grid_height;
+    }
+    else {
+        grid_dim = generator.grid_width;
+    }
+    for _i in 0..grid_dim {
+        let vec : Vec<u32> = get_random_grid(generator.dimensions);
+        let row = grid_dim * generator.grid_height;
+        let cel = grid_dim * generator.grid_width;
+        for rc in 0..generator.dimensions {
+            let rc_row = row + rc / generator.grid_width;
+            let rc_cel = cel + rc % generator.grid_width;
+            sudoku.board[rc_row][rc_cel] = vec[rc];
+        }
+    }
+    let vec = solve(&mut sudoku, 1);
+    for v in vec {
+        return Some(v);
+    }
+    None
 }
 
 pub fn generate(generator: &Generator) -> Option<(sudoku::Sudoku, sudoku::Sudoku)> {
@@ -79,30 +126,23 @@ pub fn generate(generator: &Generator) -> Option<(sudoku::Sudoku, sudoku::Sudoku
         generator.grid_width,
         generator.charset.clone(),
     );
-    let mut rng = rand::rng();
-    for _i in 0..generator.initial_randomized_cells {
+    let golden;
+    if let Some(g) = generate_golden(generator) {
+        golden = g;
+    }
+    else {
+        return None;
+    }
+
+    for _i in 0..generator.kickstart_cells {
         let row = rand::random_range(0..generator.dimensions);
         let col = rand::random_range(0..generator.dimensions);
         if sudoku.board[row][col] != 0 {
             continue;
         }
-        let choices = possible_binaries(&sudoku, row, col);
-        let binary = choices.choose(&mut rng);
-        if let Some(bin) = binary {
-            sudoku.board[row][col] = *bin;
-        }
+        sudoku.board[row][col] = golden.board[row][col];
     }
-    if generator.kickstart_cells != 0 {
-        let vec = solve(&mut sudoku, 1);
-        if vec.len() != 1 {
-            return None;
-        }
-        let golden = &vec[0];
-        let diffs = get_diff(&sudoku, &golden);
-        for (dr, dc, dv) in diffs.choose_multiple(&mut rng, generator.kickstart_cells) {
-                        sudoku.board[*dr][*dc] = *dv;
-            }
-    }
+    let mut rng = rand::rng();
     loop {
         let vec = solve(&mut sudoku, generator.threshold);
         if vec.len() == 0 {
@@ -116,9 +156,9 @@ pub fn generate(generator: &Generator) -> Option<(sudoku::Sudoku, sudoku::Sudoku
         }
         match vec.choose(&mut rng) {
             None => return None,
-            Some(golden) => {
+            Some(alternative) => {
                 for _i in 0..generator.picks_per_solve {
-                    let diffs = get_diff(&sudoku, golden);
+                    let diffs = get_diff(&sudoku, &golden, &alternative);
                     if let Some((dr, dc, dv)) = diffs.choose(&mut rng) {
                         sudoku.board[*dr][*dc] = *dv;
                     }
