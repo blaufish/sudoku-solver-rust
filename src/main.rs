@@ -33,6 +33,9 @@ struct Args {
     #[arg(long, default_value = "123456789")]
     generate_charset: String,
 
+    #[arg(long, default_value = "1")]
+    generate_count: usize,
+
     #[arg(long, default_value = None)]
     solve_strategy: Option<String>,
 }
@@ -56,11 +59,25 @@ fn operation_solve(file: std::path::PathBuf, solve_strategy: Option<String>) -> 
     Ok(())
 }
 
-fn operation_generate(generator: generator::Generator) {
+fn operation_generate(generator: generator::Generator, count: usize) {
     if !generator.validate_generator() {
         return ();
     }
-    generator::generate(&generator);
+    for _i in 0..count {
+        let start = Instant::now();
+        let result = generator::generate(&generator);
+        let duration = start.elapsed();
+        println!("Time elapsed: {:?}", duration);
+        match result {
+            None => println!("Generating sudoku failed!"),
+            Some((challenge, solution)) => {
+                println!("Challenge:");
+                println!("{}", challenge.to_string());
+                println!("Solution:");
+                println!("{}", solution.to_string());
+            }
+        }
+    }
 }
 
 fn main() -> io::Result<()> {
@@ -82,7 +99,7 @@ fn main() -> io::Result<()> {
             grid_height: args.generate_grid_height,
             charset: args.generate_charset,
         };
-        operation_generate(generator);
+        operation_generate(generator, args.generate_count);
     }
     Ok(())
 }

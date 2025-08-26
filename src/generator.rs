@@ -70,7 +70,7 @@ fn get_diff(sudoku: &sudoku::Sudoku, vec: Vec<sudoku::Sudoku>) -> Vec<(usize, us
     diff
 }
 
-pub fn generate(generator: &Generator) {
+pub fn generate(generator: &Generator) -> Option<(sudoku::Sudoku, sudoku::Sudoku)> {
     let mut sudoku = sudoku::Sudoku::new(
         generator.dimensions,
         generator.grid_height,
@@ -78,7 +78,7 @@ pub fn generate(generator: &Generator) {
         generator.charset.clone(),
     );
     let mut rng = rand::rng();
-    for _i in 0..generator.dimensions {
+    for _i in 0..generator.dimensions / 2 {
         let row = rand::random_range(0..generator.dimensions);
         let col = rand::random_range(0..generator.dimensions);
         if sudoku.board[row][col] != 0 {
@@ -90,34 +90,20 @@ pub fn generate(generator: &Generator) {
             sudoku.board[row][col] = *bin;
         }
     }
-    println!("randomized a few starting values...");
-    println!("{}", &sudoku.to_string());
     loop {
-        let mut vec = solve(&mut sudoku);
-        //println!("got {} solutions!", vec.len());
+        let vec = solve(&mut sudoku);
+        if vec.len() == 0 {
+            return None;
+        }
         if vec.len() == 1 {
             for sudoku2 in vec {
-                println!("Challenge:");
-                println!("{}", sudoku.to_string());
-                println!("Solution:");
-                println!("{}", sudoku2.to_string());
+                return Some((sudoku, sudoku2));
             }
-            break;
+            return None;
         }
         let diffs = get_diff(&sudoku, vec.clone());
         if let Some((dr, dc, dv)) = diffs.choose(&mut rng) {
             sudoku.board[*dr][*dc] = *dv;
-            //println!("board[{}][{}] = {}", *dr, *dc, *dv);
-            //println!("{}", sudoku.to_string());
-            /*
-            let mut pruned : Vec<sudoku::Sudoku> = Vec::new();
-            for v in vec {
-                if v.board[*dr][*dc] == *dv {
-                    pruned.push(v);
-                }
-            }
-            vec = pruned;
-            */
         }
     }
 }
@@ -178,7 +164,7 @@ fn solve_inner(sudoku: &mut sudoku::Sudoku, table: &mut Table) -> Vec<sudoku::Su
         vec.push(sudoku.clone());
         return vec;
     }
-    let max_entries = 10;
+    let max_entries = 100;
 
     let utilized_row = table.rows[row];
     let utilized_col = table.cols[col];
