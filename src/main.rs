@@ -33,6 +33,18 @@ struct Args {
     #[arg(long, default_value = "123456789")]
     generate_charset: String,
 
+    #[arg(long, default_value = "2")]
+    generate_internal_max_entries: usize,
+
+    #[arg(long, default_value = "2")]
+    generate_internal_picks_per_solve: usize,
+
+    #[arg(long, default_value = "3")]
+    generate_internal_initial_randomized_cells: usize,
+
+    #[arg(long, default_value = "6")]
+    generate_internal_kickstart_cells: usize,
+
     #[arg(long, default_value = "1")]
     generate_count: usize,
 
@@ -102,6 +114,10 @@ fn main() -> io::Result<()> {
             grid_width: args.generate_grid_width,
             grid_height: args.generate_grid_height,
             charset: args.generate_charset,
+            threshold: args.generate_internal_max_entries,
+            picks_per_solve: args.generate_internal_picks_per_solve,
+            initial_randomized_cells: args.generate_internal_initial_randomized_cells,
+            kickstart_cells: args.generate_internal_kickstart_cells,
         };
         operation_generate(generator, args.generate_count);
     }

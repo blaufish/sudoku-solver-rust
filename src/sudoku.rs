@@ -1,6 +1,6 @@
 #[derive(Clone)]
 pub struct Sudoku {
-    pub board: [[u32; 16]; 16],
+    pub board: [[u32; 25]; 25],
     pub dimensions: usize,
     pub grid_height: usize,
     pub grid_width: usize,
@@ -15,7 +15,7 @@ impl Sudoku {
         character_set: String,
     ) -> Sudoku {
         Sudoku {
-            board: [[0; 16]; 16],
+            board: [[0; 25]; 25],
             dimensions: dimensions,
             grid_height: grid_height,
             grid_width: grid_width,

@@ -67,6 +67,14 @@ pub fn parse(contents: String) -> io::Result<sudoku::Sudoku> {
             subsquare_height = 4;
             subsquare_width = 4;
         }
+        20 => {
+            subsquare_height = 4;
+            subsquare_width = 5;
+        }
+        25 => {
+            subsquare_height = 5;
+            subsquare_width = 5;
+        }
         _ => {
             return Err(Error::new(ErrorKind::Other, "Unknown sudoku type"));
         }
