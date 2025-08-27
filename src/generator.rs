@@ -109,23 +109,34 @@ fn generate_golden(generator: &Generator) -> Option<sudoku::Sudoku> {
         for rc in 0..generator.dimensions {
             let rc_row = row + rc / generator.grid_width;
             let rc_cel = cel + rc % generator.grid_width;
+            if rc > 24 {
+                println!(
+            }
             sudoku.board[rc_row][rc_cel] = vec[rc];
         }
     }
-    let vec = solve(&mut sudoku, 1);
+    let vec = solve(&mut sudoku, 1, None);
     for v in vec {
         return Some(v);
     }
     None
 }
 
+pub fn get_none_empty_cells(sudoku: sudoku::Sudoku) -> Vec<(usize, usize)> {
+    let mut v : Vec<(usize, usize)> = Vec::new();
+    for r in 0..sudoku.dimensions {
+        for c in 0..sudoku.dimensions {
+            let row : usize = r;
+            let col : usize = c;
+            if sudoku.board[row][col] != 0 {
+                v.push((row, col));
+            }
+        }
+    }
+    v
+}
+
 pub fn generate(generator: &Generator) -> Option<(sudoku::Sudoku, sudoku::Sudoku)> {
-    let mut sudoku = sudoku::Sudoku::new(
-        generator.dimensions,
-        generator.grid_height,
-        generator.grid_width,
-        generator.charset.clone(),
-    );
     let golden;
     if let Some(g) = generate_golden(generator) {
         golden = g;
@@ -134,38 +145,29 @@ pub fn generate(generator: &Generator) -> Option<(sudoku::Sudoku, sudoku::Sudoku
         return None;
     }
 
-    for _i in 0..generator.kickstart_cells {
-        let row = rand::random_range(0..generator.dimensions);
-        let col = rand::random_range(0..generator.dimensions);
-        if sudoku.board[row][col] != 0 {
-            continue;
-        }
-        sudoku.board[row][col] = golden.board[row][col];
-    }
+    let mut sudoku = golden.clone();
     let mut rng = rand::rng();
-    loop {
-        let vec = solve(&mut sudoku, generator.threshold);
-        if vec.len() == 0 {
+
+    for i in 0..sudoku.dimensions*sudoku.dimensions {
+        let row : usize;
+        let col : usize;
+        let none_empty = get_none_empty_cells(sudoku.clone());
+        if let Some((r, c)) = none_empty.choose(&mut rng) {
+            row = *r;
+            col = *c;
+        }
+        else {
             return None;
         }
-        if vec.len() == 1 {
-            for sudoku2 in vec {
-                return Some((sudoku, sudoku2));
-            }
-            return None;
-        }
-        match vec.choose(&mut rng) {
-            None => return None,
-            Some(alternative) => {
-                for _i in 0..generator.picks_per_solve {
-                    let diffs = get_diff(&sudoku, &golden, &alternative);
-                    if let Some((dr, dc, dv)) = diffs.choose(&mut rng) {
-                        sudoku.board[*dr][*dc] = *dv;
-                    }
-                }
-            }
+        let tmp = sudoku.board[row][col];
+        sudoku.board[row][col] = 0;
+        let vec = solve(&mut sudoku, 1, Some(golden.clone()));
+        if vec.len() != 0 {
+            sudoku.board[row][col] = tmp;
+            return Some((sudoku, golden));
         }
     }
+    return None;
 }
 
 struct Table {
@@ -197,13 +199,33 @@ impl Table {
     }
 }
 
-fn solve(sudoku: &mut sudoku::Sudoku, max_entries: usize) -> Vec<sudoku::Sudoku> {
-    let mut table = Table::new();
-    table.populate(sudoku);
-    solve_inner(sudoku, &mut table, max_entries)
+fn sudoku_equals(a: &sudoku::Sudoku, b: &sudoku::Sudoku) -> bool {
+    if a.dimensions != b.dimensions {
+        return false;
+    }
+    if a.grid_height != b.grid_height {
+        return false;
+    }
+    if a.grid_width != b.grid_width {
+        return false;
+    }
+    for row in 0..a.dimensions {
+        for col in 0..a.dimensions {
+            if a.board[row][col] != b.board[row][col] {
+                return false;
+            }
+        }
+    }
+    true
 }
 
-fn solve_inner(sudoku: &mut sudoku::Sudoku, table: &mut Table, max_entries: usize) -> Vec<sudoku::Sudoku> {
+fn solve(sudoku: &mut sudoku::Sudoku, max_entries: usize, ignore: Option<sudoku::Sudoku>) -> Vec<sudoku::Sudoku> {
+    let mut table = Table::new();
+    table.populate(sudoku);
+    solve_inner(sudoku, &mut table, max_entries, ignore)
+}
+
+fn solve_inner(sudoku: &mut sudoku::Sudoku, table: &mut Table, max_entries: usize, ignore: Option<sudoku::Sudoku>) -> Vec<sudoku::Sudoku> {
     let mut vec: Vec<sudoku::Sudoku> = Vec::new();
     let mut row: usize = 0;
     let mut col: usize = 0;
@@ -221,6 +243,12 @@ fn solve_inner(sudoku: &mut sudoku::Sudoku, table: &mut Table, max_entries: usiz
         }
     }
     if solved {
+        if let Some(skippy) = ignore {
+            if sudoku_equals(sudoku, &skippy) {
+                //return early, this is not the droid we are looking for
+                return vec;
+            }
+        }
         vec.push(sudoku.clone());
         return vec;
     }
@@ -242,7 +270,7 @@ fn solve_inner(sudoku: &mut sudoku::Sudoku, table: &mut Table, max_entries: usiz
         table.cols[col] ^= binary;
         table.grids[grid_row][grid_col] ^= binary;
 
-        let recursive_solved = solve_inner(sudoku, table, max_entries);
+        let recursive_solved = solve_inner(sudoku, table, max_entries, ignore.clone());
 
         sudoku.board[row][col] = 0;
         table.rows[row] ^= binary;

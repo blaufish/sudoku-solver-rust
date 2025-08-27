@@ -33,7 +33,7 @@ struct Args {
     #[arg(long, default_value = "123456789")]
     generate_charset: String,
 
-    #[arg(long, default_value = "2")]
+    #[arg(long, default_value = "1")]
     generate_internal_max_entries: usize,
 
     #[arg(long, default_value = "2")]
