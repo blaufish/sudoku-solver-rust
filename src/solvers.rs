@@ -97,8 +97,6 @@ fn solve_faster(sudoku: &mut sudoku::Sudoku) -> bool {
 }
 
 fn solve_faster_inner(sudoku: &mut sudoku::Sudoku, table: &mut Table) -> bool {
-    let mut row: usize;
-    let mut col: usize;
     let mut solved = true;
 
     for r in 0..sudoku.dimensions {
@@ -107,8 +105,6 @@ fn solve_faster_inner(sudoku: &mut sudoku::Sudoku, table: &mut Table) -> bool {
                 continue;
             }
             solved = false;
-            row = r;
-            col = c;
             break;
         }
     }
@@ -131,12 +127,8 @@ fn solve_faster_inner(sudoku: &mut sudoku::Sudoku, table: &mut Table) -> bool {
         return false;
     }
 
-    let utilized_row = table.rows[row];
-    let utilized_col = table.cols[col];
     let grid_row = row / sudoku.grid_height;
     let grid_col = col / sudoku.grid_width;
-    let utilized_grid = table.grids[grid_row][grid_col];
-    let utilized = utilized_row | utilized_col | utilized_grid;
     for binary in values {
         sudoku.board[row][col] = binary;
         table.rows[row] ^= binary;

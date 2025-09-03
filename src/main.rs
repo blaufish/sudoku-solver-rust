@@ -33,14 +33,8 @@ struct Args {
     #[arg(long, default_value = "123456789")]
     generate_charset: String,
 
-    #[arg(long, default_value = "1")]
-    generate_internal_max_entries: usize,
-
-    #[arg(long, default_value = "2")]
-    generate_internal_picks_per_solve: usize,
-
-    #[arg(long, default_value = "6")]
-    generate_internal_kickstart_cells: usize,
+    #[arg(long, default_value = "20")]
+    generate_max_prune_seconds: u64,
 
     #[arg(long, default_value = "1")]
     generate_count: usize,
@@ -72,18 +66,28 @@ fn operation_generate(generator: generator::Generator, count: usize) {
     if !generator.validate_generator() {
         return ();
     }
+    println!("Generate solution...");
+    let golden;
+    if let Some(g) = generator::generate_golden(&generator) {
+        golden = g;
+    }
+    else {
+        println!("Error: Failure generating solution...");
+        return ();
+    }
+    println!("Solution:");
+    println!("{}", golden.to_string());
+    println!("Generating challenge...");
     for _i in 0..count {
         let start = Instant::now();
-        let result = generator::generate(&generator);
+        let result = generator::generate_challenge(&generator, &golden);
         let duration = start.elapsed();
         println!("Time elapsed: {:?}", duration);
         match result {
             None => println!("Generating sudoku failed!"),
-            Some((challenge, solution)) => {
+            Some(challenge) => {
                 println!("Challenge:");
                 println!("{}", challenge.to_string());
-                println!("Solution:");
-                println!("{}", solution.to_string());
             }
         }
     }
@@ -111,9 +115,7 @@ fn main() -> io::Result<()> {
             grid_width: args.generate_grid_width,
             grid_height: args.generate_grid_height,
             charset: args.generate_charset,
-            threshold: args.generate_internal_max_entries,
-            picks_per_solve: args.generate_internal_picks_per_solve,
-            kickstart_cells: args.generate_internal_kickstart_cells,
+            max_prune_seconds: args.generate_max_prune_seconds,
         };
         operation_generate(generator, args.generate_count);
     }

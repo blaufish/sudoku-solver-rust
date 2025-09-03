@@ -1,6 +1,6 @@
 use crate::sudoku;
 use rand::prelude::*;
-use std::io::Write;
+//use std::io::Write;
 use std::time::Duration;
 use std::time::Instant;
 
@@ -9,9 +9,7 @@ pub struct Generator {
     pub grid_width: usize,
     pub grid_height: usize,
     pub charset: String,
-    pub threshold: usize,
-    pub picks_per_solve: usize,
-    pub kickstart_cells: usize,
+    pub max_prune_seconds : u64,
 }
 
 impl Generator {
@@ -65,12 +63,12 @@ fn fill_grid(sudoku: &mut sudoku::Sudoku, grid_row: usize, grid_col: usize) {
         let val : u32 = random_grid[i];
         let row = grid_row * sudoku.grid_height + (i / sudoku.grid_width);
         let col = grid_col * sudoku.grid_width + (i % sudoku.grid_width);
-        println!("Init: {},{} = {}", row, col, val);
+        //println!("Init: {},{} = {}", row, col, val);
         sudoku.board[row][col] = val;
     }
 }
 
-fn generate_golden(generator: &Generator) -> Option<sudoku::Sudoku> {
+pub fn generate_golden(generator: &Generator) -> Option<sudoku::Sudoku> {
     let mut sudoku = sudoku::Sudoku::new(
         generator.dimensions,
         generator.grid_height,
@@ -97,7 +95,7 @@ fn generate_golden(generator: &Generator) -> Option<sudoku::Sudoku> {
     for v in vec {
         return Some(v);
     }
-    println!("Could not find any solution?");
+    //println!("Could not find any solution?");
     None
 }
 
@@ -129,18 +127,8 @@ pub fn get_none_empty_cells(sudoku: sudoku::Sudoku) -> Vec<(usize, usize)> {
     v
 }
 
-pub fn generate(generator: &Generator) -> Option<(sudoku::Sudoku, sudoku::Sudoku)> {
-    let golden;
-    println!("Generate golden...");
-    if let Some(g) = generate_golden(generator) {
-        golden = g;
-    }
-    else {
-        return None;
-    }
-    println!("Generated golden...");
-
-    let max_duration = Duration::new(30, 0);
+pub fn generate_challenge(generator: &Generator, golden: &sudoku::Sudoku) -> Option<sudoku::Sudoku> {
+    let max_duration = Duration::new(generator.max_prune_seconds, 0);
 
     let mut sudoku = golden.clone();
     let mut rng = rand::rng();
@@ -153,7 +141,7 @@ pub fn generate(generator: &Generator) -> Option<(sudoku::Sudoku, sudoku::Sudoku
     cells.shuffle(&mut rng);
     for cell in cells {
         let duration = start.elapsed();
-        println!("Elapsed {}...", duration.as_secs());
+        //println!("Elapsed {}...", duration.as_secs());
         if duration > max_duration {
             break;
         }
@@ -169,7 +157,7 @@ pub fn generate(generator: &Generator) -> Option<(sudoku::Sudoku, sudoku::Sudoku
             sudoku.board[row][col] = tmp;
         }
     }
-    return Some((sudoku, golden));
+    return Some(sudoku);
 }
 
 struct Table {
@@ -275,13 +263,11 @@ fn next_moves(sudoku: &sudoku::Sudoku, table: &Table) -> Option<(usize, usize, V
 
 fn solve_inner(sudoku: &mut sudoku::Sudoku, table: &mut Table, max_entries: usize, ignore: &Vec<sudoku::Sudoku>) -> Vec<sudoku::Sudoku> {
     let mut vec: Vec<sudoku::Sudoku> = Vec::new();
-    let mut row: usize = 0;
-    let mut col: usize = 0;
     let mut solved = true;
 
     for bad in ignore {
         if sudoku_equals(&bad, &sudoku) {
-            println!("hrrm");
+            //println!("hrrm");
             return vec;
         }
     }
@@ -292,13 +278,11 @@ fn solve_inner(sudoku: &mut sudoku::Sudoku, table: &mut Table, max_entries: usiz
                 continue;
             }
             solved = false;
-            row = r;
-            col = c;
             break;
         }
     }
     if solved {
-        println!("Solved!");
+        //println!("Solved!");
         vec.push(sudoku.clone());
         return vec;
     }
@@ -318,12 +302,8 @@ fn solve_inner(sudoku: &mut sudoku::Sudoku, table: &mut Table, max_entries: usiz
         return vec;
     }
 
-    let utilized_row = table.rows[row];
-    let utilized_col = table.cols[col];
     let grid_row = row / sudoku.grid_height;
     let grid_col = col / sudoku.grid_width;
-    let utilized_grid = table.grids[grid_row][grid_col];
-    let utilized = utilized_row | utilized_col | utilized_grid;
     for binary in values {
         sudoku.board[row][col] = binary;
         table.rows[row] ^= binary;
@@ -337,12 +317,12 @@ fn solve_inner(sudoku: &mut sudoku::Sudoku, table: &mut Table, max_entries: usiz
         table.cols[col] ^= binary;
         table.grids[grid_row][grid_col] ^= binary;
 
-        if recursive_solved.len() > 0 {
-            println!("Solutions... {}", recursive_solved.len());
-        }
+        //if recursive_solved.len() > 0 {
+        //    println!("Solutions... {}", recursive_solved.len());
+        //}
         for v in recursive_solved {
             vec.push(v);
-            println!("vec.len(): {}", vec.len());
+            //println!("vec.len(): {}", vec.len());
             if vec.len() >= max_entries {
                 return vec;
             }
