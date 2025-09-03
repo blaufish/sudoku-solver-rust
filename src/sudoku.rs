@@ -1,6 +1,9 @@
+pub const MAX_GRID_DIMENSIONS: usize = 5;
+pub const MAX_DIMENSIONS: usize = MAX_GRID_DIMENSIONS * MAX_GRID_DIMENSIONS;
+
 #[derive(Clone)]
 pub struct Sudoku {
-    pub board: [[u32; 25]; 25],
+    pub board: [[u32; MAX_DIMENSIONS]; MAX_DIMENSIONS],
     pub dimensions: usize,
     pub grid_height: usize,
     pub grid_width: usize,
@@ -15,7 +18,7 @@ impl Sudoku {
         character_set: String,
     ) -> Sudoku {
         Sudoku {
-            board: [[0; 25]; 25],
+            board: [[0; MAX_DIMENSIONS]; MAX_DIMENSIONS],
             dimensions: dimensions,
             grid_height: grid_height,
             grid_width: grid_width,
