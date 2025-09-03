@@ -8,6 +8,7 @@ mod generator;
 mod helpers;
 mod solvers;
 mod sudoku;
+mod table;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]

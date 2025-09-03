@@ -1,6 +1,7 @@
 use crate::sudoku;
+use crate::table::Table;
+
 use rand::prelude::*;
-//use std::io::Write;
 use std::time::Duration;
 use std::time::Instant;
 
@@ -160,35 +161,6 @@ pub fn generate_challenge(
         }
     }
     return Some(sudoku);
-}
-
-struct Table {
-    rows: [u32; 25],
-    cols: [u32; 25],
-    grids: [[u32; 5]; 5],
-}
-
-impl Table {
-    fn new() -> Table {
-        Table {
-            rows: [0; 25],
-            cols: [0; 25],
-            grids: [[0; 5]; 5],
-        }
-    }
-    fn populate(&mut self, sudoku: &sudoku::Sudoku) {
-        for i in 0..sudoku.dimensions {
-            self.rows[i] = sudoku.utilized_row(i);
-            self.cols[i] = sudoku.utilized_col(i);
-        }
-        for r in 0..(sudoku.dimensions / sudoku.grid_height) {
-            for c in 0..(sudoku.dimensions / sudoku.grid_width) {
-                let row = r * sudoku.grid_height;
-                let col = c * sudoku.grid_width;
-                self.grids[r][c] = sudoku.utilized_grid(row, col);
-            }
-        }
-    }
 }
 
 fn sudoku_equals(a: &sudoku::Sudoku, b: &sudoku::Sudoku) -> bool {

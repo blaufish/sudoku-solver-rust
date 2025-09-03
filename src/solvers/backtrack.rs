@@ -1,40 +1,10 @@
 use crate::sudoku;
-use crate::sudoku::MAX_DIMENSIONS;
-use crate::sudoku::MAX_GRID_DIMENSIONS;
+use crate::table::Table;
 
 pub fn solve(sudoku: &mut sudoku::Sudoku) -> bool {
     let mut table = Table::new();
     table.populate(sudoku);
     solve_inner(sudoku, &mut table)
-}
-
-struct Table {
-    rows: [u32; MAX_DIMENSIONS],
-    cols: [u32; MAX_DIMENSIONS],
-    grids: [[u32; MAX_GRID_DIMENSIONS]; MAX_GRID_DIMENSIONS],
-}
-
-impl Table {
-    fn new() -> Table {
-        Table {
-            rows: [0; MAX_DIMENSIONS],
-            cols: [0; MAX_DIMENSIONS],
-            grids: [[0; MAX_GRID_DIMENSIONS]; MAX_GRID_DIMENSIONS],
-        }
-    }
-    fn populate(&mut self, sudoku: &sudoku::Sudoku) {
-        for i in 0..sudoku.dimensions {
-            self.rows[i] = sudoku.utilized_row(i);
-            self.cols[i] = sudoku.utilized_col(i);
-        }
-        for r in 0..(sudoku.dimensions / sudoku.grid_height) {
-            for c in 0..(sudoku.dimensions / sudoku.grid_width) {
-                let row = r * sudoku.grid_height;
-                let col = c * sudoku.grid_width;
-                self.grids[r][c] = sudoku.utilized_grid(row, col);
-            }
-        }
-    }
 }
 
 //Prioritize solving easy squares early, hopefully reducing level of recursion
