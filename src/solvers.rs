@@ -1,7 +1,7 @@
 use crate::sudoku;
 
-const MAX_GRID_DIMENSIONS : usize = 5;
-const MAX_DIMENSIONS : usize = MAX_GRID_DIMENSIONS * MAX_GRID_DIMENSIONS;
+const MAX_GRID_DIMENSIONS: usize = 5;
+const MAX_DIMENSIONS: usize = MAX_GRID_DIMENSIONS * MAX_GRID_DIMENSIONS;
 
 pub fn solve(sudoku: &mut sudoku::Sudoku, strategy: Option<&str>) -> bool {
     let strat;
@@ -50,7 +50,7 @@ impl Table {
 
 //Prioritize solving easy squares early, hopefully reducing level of recursion
 fn next_moves(sudoku: &sudoku::Sudoku, table: &Table) -> Option<(usize, usize, Vec<u32>)> {
-    let mut result : Option<(usize, usize, Vec<u32>)> = None;
+    let mut result: Option<(usize, usize, Vec<u32>)> = None;
     for row in 0..sudoku.dimensions {
         let utilized_row = table.rows[row];
         for col in 0..sudoku.dimensions {
@@ -62,7 +62,7 @@ fn next_moves(sudoku: &sudoku::Sudoku, table: &Table) -> Option<(usize, usize, V
             let grid_col = col / sudoku.grid_width;
             let utilized_grid = table.grids[grid_row][grid_col];
             let utilized = utilized_row | utilized_col | utilized_grid;
-            let mut moves : Vec<u32> = Vec::new();
+            let mut moves: Vec<u32> = Vec::new();
             for i in 0..sudoku.dimensions {
                 let binary: u32 = 1 << i;
                 if binary & utilized != 0 {
@@ -79,8 +79,7 @@ fn next_moves(sudoku: &sudoku::Sudoku, table: &Table) -> Option<(usize, usize, V
                 Some((r, c, old_moves)) => {
                     if moves.len() < old_moves.len() {
                         result = Some((row, col, moves));
-                    }
-                    else {
+                    } else {
                         result = Some((r, c, old_moves));
                     }
                 }
@@ -112,17 +111,15 @@ fn solve_faster_inner(sudoku: &mut sudoku::Sudoku, table: &mut Table) -> bool {
         return true;
     }
 
-
     let moves = next_moves(&sudoku, &table);
-    let row : usize;
-    let col : usize;
-    let values : Vec<u32>;
+    let row: usize;
+    let col: usize;
+    let values: Vec<u32>;
     if let Some((r, c, v)) = moves {
         row = r;
         col = c;
         values = v;
-    }
-    else {
+    } else {
         //Give up. No move is possible.
         return false;
     }

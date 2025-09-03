@@ -74,8 +74,7 @@ fn operation_generate(generator: generator::Generator, count: usize) {
         println!("Time elapsed: {:?}", start1.elapsed());
         if let Some(g) = maybe_golden {
             golden = g;
-        }
-        else {
+        } else {
             println!("Error: Failure generating solution...");
             return ();
         }
