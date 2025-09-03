@@ -194,12 +194,12 @@ mb834 0ncae 5fg1d jk627 lph9o
 
 ### Usage: Generating a 25x25 sudoku
 
-`sudoku-solver-rust \
- --generate \
- --generate-size=25 \
- --generate-grid-width=5 \
- --generate-grid-height=5 \
- --generate-charset=0123456789abcdefghjklmnop \
+`sudoku-solver-rust
+ --generate
+ --generate-size=25
+ --generate-grid-width=5
+ --generate-grid-height=5
+ --generate-charset=0123456789abcdefghjklmnop
  --generate-max-prune-seconds=2`
 
 ``` plain
