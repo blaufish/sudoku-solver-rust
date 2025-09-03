@@ -66,23 +66,25 @@ fn operation_generate(generator: generator::Generator, count: usize) {
     if !generator.validate_generator() {
         return ();
     }
-    println!("Generate solution...");
-    let golden;
-    if let Some(g) = generator::generate_golden(&generator) {
-        golden = g;
-    }
-    else {
-        println!("Error: Failure generating solution...");
-        return ();
-    }
-    println!("Solution:");
-    println!("{}", golden.to_string());
-    println!("Generating challenge...");
     for _i in 0..count {
-        let start = Instant::now();
+        println!("Generate solution...");
+        let golden;
+        let start1 = Instant::now();
+        let maybe_golden = generator::generate_golden(&generator);
+        println!("Time elapsed: {:?}", start1.elapsed());
+        if let Some(g) = maybe_golden {
+            golden = g;
+        }
+        else {
+            println!("Error: Failure generating solution...");
+            return ();
+        }
+        println!("Solution:");
+        println!("{}", golden.to_string());
+        println!("Generating challenge...");
+        let start2 = Instant::now();
         let result = generator::generate_challenge(&generator, &golden);
-        let duration = start.elapsed();
-        println!("Time elapsed: {:?}", duration);
+        println!("Time elapsed: {:?}", start2.elapsed());
         match result {
             None => println!("Generating sudoku failed!"),
             Some(challenge) => {
