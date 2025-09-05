@@ -7,7 +7,7 @@ pub struct Sudoku {
     pub dimensions: usize,
     pub grid_height: usize,
     pub grid_width: usize,
-    character_set: String,
+    pub character_set: String,
 }
 
 impl Sudoku {

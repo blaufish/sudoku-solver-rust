@@ -1,6 +1,6 @@
 use crate::sudoku;
-use crate::sudoku::MAX_GRID_DIMENSIONS;
 use crate::sudoku::MAX_DIMENSIONS;
+use crate::sudoku::MAX_GRID_DIMENSIONS;
 
 pub struct Table {
     pub rows: [u32; MAX_DIMENSIONS],
