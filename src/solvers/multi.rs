@@ -13,7 +13,15 @@ fn restore(sudoku: &mut sudoku::Sudoku, restorepoint: &Vec<(usize, usize)>) {
 
 fn solve_inner(sudoku: &mut sudoku::Sudoku) -> bool {
     let mut restorepoint: Vec<(usize, usize)> = Vec::new();
-    let check = pre(sudoku, &mut restorepoint);
+    let result = solve_inner_inner(sudoku, &mut restorepoint);
+    if !result {
+        restore(sudoku, &mut restorepoint);
+    }
+    result
+}
+
+fn solve_inner_inner(sudoku: &mut sudoku::Sudoku, restorepoint: &mut Vec<(usize, usize)>) -> bool {
+    let check = pre(sudoku, restorepoint);
     match check {
         PreCheckValue::Completed => return true,
         PreCheckValue::NotCompleted => (),
@@ -28,7 +36,6 @@ fn solve_inner(sudoku: &mut sudoku::Sudoku) -> bool {
         values = v;
     } else {
         //Give up. No move is possible.
-        restore(sudoku, &restorepoint);
         return false;
     }
     for binary in values {
@@ -38,8 +45,6 @@ fn solve_inner(sudoku: &mut sudoku::Sudoku) -> bool {
         }
         sudoku.board[row][col] = 0;
     }
-
-    restore(sudoku, &restorepoint);
     false
 }
 
