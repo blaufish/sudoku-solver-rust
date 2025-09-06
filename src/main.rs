@@ -46,6 +46,29 @@ struct Args {
 }
 
 fn operation_solve(file: std::path::PathBuf, solve_strategy: Option<String>) -> io::Result<()> {
+    let strategy = solve_strategy.as_deref();
+    match strategy {
+        None => (),
+        Some(s) => {
+            let mut found = false;
+            for valid_stategy in solvers::list_solvers() {
+                if s == valid_stategy {
+                    found = true;
+                    break;
+                }
+            }
+            if !found {
+                eprintln!("Error unknown strategy: {}", s);
+                print!("Valid strategies:");
+                for valid_stategy in solvers::list_solvers() {
+                    print!(" {}", valid_stategy);
+                }
+                println!();
+                return Ok(());
+            }
+        }
+    }
+
     let contents = fs::read_to_string(file)?;
 
     println!("File contents:\n{}", contents);
@@ -55,7 +78,7 @@ fn operation_solve(file: std::path::PathBuf, solve_strategy: Option<String>) -> 
     println!("{}", &sudoku.to_string());
 
     let start = Instant::now();
-    let solved = solvers::solve(&mut sudoku, solve_strategy.as_deref());
+    let solved = solvers::solve(&mut sudoku, strategy);
     let duration = start.elapsed();
     println!("Time elapsed: {:?}", duration);
 
