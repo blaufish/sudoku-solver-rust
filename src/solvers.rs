@@ -2,15 +2,24 @@ use crate::sudoku;
 mod backtrack;
 mod multi;
 
+const BACKTRACK: &str = "backtrack";
+const MULTI: &str = "mutli";
+
+const DEFAULT: &str = MULTI;
+
+pub fn list_solvers() -> Vec<String> {
+    return vec![MULTI.to_string(), BACKTRACK.to_string()];
+}
+
 pub fn solve(sudoku: &mut sudoku::Sudoku, strategy: Option<&str>) -> bool {
     let strat;
     match strategy {
-        None => return backtrack::solve(sudoku),
+        None => strat = DEFAULT,
         Some(s) => strat = s,
     }
     match strat {
-        "backtrack_faster" => return backtrack::solve(sudoku),
-        "multi" => return multi::solve(sudoku),
+        BACKTRACK => return backtrack::solve(sudoku),
+        MULTI => return multi::solve(sudoku),
         _ => {
             println!("Unimplemented: {}", strat);
         }

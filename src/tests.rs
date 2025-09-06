@@ -2,31 +2,56 @@
 mod tests {
     use crate::helpers;
     use crate::solvers;
-    fn process(testvector: String) -> String {
-        let mut sudoku;
-        match helpers::parse(testvector) {
-            Ok(s) => sudoku = s,
-            Err(_) => return String::from(""),
-        }
-        let _ = solvers::solve(&mut sudoku, None);
-        sudoku.to_string()
-    }
 
-    #[test]
-    fn test_unicode() {
-        let vector = "__💩 ___ __🍅\n_🌈🍅 _💩_ ___\n___ 🍅__ 🍕💩🌈\n\n\
-                      🎆🎌🌈 🐡_🐙 💩_🍕\n🍅🏠🍕 💩🎌🎆 __🐙\n_💩_ 🌈_🍕 🎌__\n\n\
-                      ___ 🎌__ 🏠_💩\n_🍕_ _🐙_ ___\n__🎆 ___ __🐡";
-        let expected = "🎌🐡💩 🐙🍕🌈 🎆🏠🍅\n🍕🌈🍅 🎆💩🏠 🐡🐙🎌\n🐙🎆🏠 🍅🐡🎌 🍕💩🌈\n\n\
-                        🎆🎌🌈 🐡🏠🐙 💩🍅🍕\n🍅🏠🍕 💩🎌🎆 🌈🐡🐙\n🐡💩🐙 🌈🍅🍕 🎌🎆🏠\n\n\
-                        🌈🐙🐡 🎌🎆🍅 🏠🍕💩\n💩🍕🎌 🏠🐙🐡 🍅🌈🎆\n🏠🍅🎆 🍕🌈💩 🐙🎌🐡";
-        let actual = process(vector.to_string());
-        assert_eq!(expected, actual);
-    }
+    const UNICODE_V: &str = "__💩 ___ __🍅
+_🌈🍅 _💩_ ___
+___ 🍅__ 🍕💩🌈
 
-    #[test]
-    fn test_25x25() {
-        let vector = "_9_c_ __f_g mh__e _jak_ 6lb__
+🎆🎌🌈 🐡_🐙 💩_🍕
+🍅🏠🍕 💩🎌🎆 __🐙
+_💩_ 🌈_🍕 🎌__
+
+___ 🎌__ 🏠_💩
+_🍕_ _🐙_ ___
+__🎆 ___ __🐡";
+
+    const UNICODE_E: &str = "🎌🐡💩 🐙🍕🌈 🎆🏠🍅
+🍕🌈🍅 🎆💩🏠 🐡🐙🎌
+🐙🎆🏠 🍅🐡🎌 🍕💩🌈
+
+🎆🎌🌈 🐡🏠🐙 💩🍅🍕
+🍅🏠🍕 💩🎌🎆 🌈🐡🐙
+🐡💩🐙 🌈🍅🍕 🎌🎆🏠
+
+🌈🐙🐡 🎌🎆🍅 🏠🍕💩
+💩🍕🎌 🏠🐙🐡 🍅🌈🎆
+🏠🍅🎆 🍕🌈💩 🐙🎌🐡";
+
+    const SUDOKU9_V: &str = "_7_ ___ 342
+46_ _2_ 7__
+32_ _7_ 068
+
+__4 208 __6
+6__ 4_1 8__
+5__ __6 421
+
+_8_ 34_ ___
+___ _1_ 6__
+053 ___ _74";
+
+    const SUDOKU9_E: &str = "871 065 342
+460 823 715
+325 174 068
+
+714 208 536
+632 451 807
+508 736 421
+
+186 347 250
+247 510 683
+053 682 174";
+
+    const SUDOKU25_V: &str = "_9_c_ __f_g mh__e _jak_ 6lb__
 ln_4e __d__ 1_983 2____ ____k
 __2mo jl___ gk_p6 3____ 8feah
 3h_ja _k87o 5f_40 ___d_ __g1n
@@ -55,7 +80,8 @@ ___o_ _____ _0___ j5dg_ 4___l
 __g_n _a___ _6___ _____ ke_9_
 0cm8l f_h__ 2j_n_ p__e9 3___1
 215_7 _p4__ d_aef 0____ ___8c";
-        let expected = "791c5 30f4g mh2de 8jakn 6lbop
+
+    const SUDOKU25_E: &str = "791c5 30f4g mh2de 8jakn 6lbop
 lnp4e 6bdmh 1a983 2fgo0 7jc5k
 d02mo jln15 gk7p6 39b4c 8feah
 3hbja 2k87o 5fc40 e6ldp 9mg1n
@@ -84,8 +110,41 @@ hafo9 em6c1 k087p j5dg3 4bn2l
 jpgbn 0alo2 36h1c m487f ked95
 0cm8l f7hdb 2j5n4 pkoe9 3a6g1
 215k7 gp439 dbaef 0n6hl moj8c";
-        let actual = process(vector.to_string());
+
+    fn process(testvector: String, strat: Option<&str>) -> String {
+        let mut sudoku;
+        match helpers::parse(testvector) {
+            Ok(s) => sudoku = s,
+            Err(_) => return String::from(""),
+        }
+        let _ = solvers::solve(&mut sudoku, strat);
+        sudoku.to_string()
+    }
+
+    #[test]
+    fn test_all_solvers() {
+        for solver in solvers::list_solvers() {
+            let vector = SUDOKU9_V.to_string();
+            let expected = SUDOKU9_E;
+            let strategy: Option<&str> = Some(&solver);
+            let actual = process(vector, strategy);
+            assert_eq!(expected, actual, "failed solving with: {}", solver);
+        }
+    }
+
+    #[test]
+    fn test_unicode() {
+        let vector = UNICODE_V;
+        let expected = UNICODE_E;
+        let actual = process(vector.to_string(), None);
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn test_25x25() {
+        let vector = SUDOKU25_V;
+        let expected = SUDOKU25_E;
+        let actual = process(vector.to_string(), None);
         assert_eq!(expected, actual);
     }
 }
-
