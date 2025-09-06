@@ -1,6 +1,4 @@
 use crate::sudoku;
-//use crate::sudoku::MAX_DIMENSIONS;
-//use crate::sudoku::MAX_GRID_DIMENSIONS;
 use crate::table::Table;
 
 pub fn solve(sudoku: &mut sudoku::Sudoku) -> bool {
@@ -17,11 +15,6 @@ fn solve_inner(sudoku: &mut sudoku::Sudoku) -> bool {
     let mut restorepoint: Vec<(usize, usize)> = Vec::new();
     let check = pre(sudoku, &mut restorepoint);
     match check {
-        PreCheckValue::Failed => {
-            //println!("failed...");
-            restore(sudoku, &restorepoint);
-            return false;
-        }
         PreCheckValue::Completed => return true,
         PreCheckValue::NotCompleted => (),
     }
@@ -46,7 +39,6 @@ fn solve_inner(sudoku: &mut sudoku::Sudoku) -> bool {
         sudoku.board[row][col] = 0;
     }
 
-    //println!("default return, restoring...");
     restore(sudoku, &restorepoint);
     false
 }
@@ -94,53 +86,9 @@ fn next_moves(sudoku: &sudoku::Sudoku) -> Option<(usize, usize, Vec<u32>)> {
     result
 }
 
-fn bincnt(bin: u32) -> u32 {
-    let mut cnt = 0;
-    let mut b = bin;
-    for i in 0..31 {
-        if b & (1 << i) != 0 {
-            cnt = cnt + 1;
-        }
-    }
-    cnt
-}
-
 enum PreCheckValue {
     Completed,
-    Failed,
     NotCompleted,
-}
-
-fn calculate_utilized(sudoku: &sudoku::Sudoku, table: &Table, row: usize, col: usize) -> u32 {
-    let grid_row = row / sudoku.grid_height;
-    let grid_col = col / sudoku.grid_width;
-    let utilized_grid = table.grids[grid_row][grid_col];
-    let utilized_row = table.rows[row];
-    let utilized_col = table.cols[col];
-    let utilized = utilized_row | utilized_col | utilized_grid;
-    utilized
-}
-
-fn calculate_not_utilized(sudoku: &sudoku::Sudoku, table: &Table, row: usize, col: usize) -> u32 {
-    let utilized = calculate_utilized(sudoku, table, row, col);
-    let xor_pattern: u32 = (1 << sudoku.character_set.chars().count()) - 1;
-    let inverted = utilized ^ xor_pattern;
-    return inverted;
-}
-
-fn deduce_broken(sudoku: &mut sudoku::Sudoku, table: &Table) -> bool {
-    for row in 0..sudoku.dimensions {
-        for col in 0..sudoku.dimensions {
-            if sudoku.board[row][col] != 0 {
-                continue;
-            }
-            let not_utilized = calculate_not_utilized(&sudoku, &table, row, col);
-            if not_utilized == 0 {
-                return true;
-            }
-        }
-    }
-    return false;
 }
 
 fn deduce_cell_locked_obvious(
@@ -207,9 +155,6 @@ fn pre(sudoku: &mut sudoku::Sudoku, restorepoint: &mut Vec<(usize, usize)>) -> P
     if deduce_completed(&sudoku) {
         return PreCheckValue::Completed;
     }
-    //if deduce_broken(sudoku, &table) {
-    //    return PreCheckValue::Failed;
-    //}
     deduce_cell_locked_obvious(sudoku, &mut table, restorepoint);
     if deduce_completed(&sudoku) {
         return PreCheckValue::Completed;
