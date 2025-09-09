@@ -99,7 +99,7 @@ pub fn generate_golden(generator: &Generator) -> Option<sudoku::Sudoku> {
     None
 }
 
-pub fn get_empty_cells(sudoku: sudoku::Sudoku) -> Vec<(usize, usize)> {
+fn get_empty_cells(sudoku: sudoku::Sudoku) -> Vec<(usize, usize)> {
     let mut v: Vec<(usize, usize)> = Vec::new();
     for r in 0..sudoku.dimensions {
         for c in 0..sudoku.dimensions {
@@ -113,7 +113,7 @@ pub fn get_empty_cells(sudoku: sudoku::Sudoku) -> Vec<(usize, usize)> {
     v
 }
 
-pub fn get_none_empty_cells(sudoku: sudoku::Sudoku) -> Vec<(usize, usize)> {
+fn get_none_empty_cells(sudoku: sudoku::Sudoku) -> Vec<(usize, usize)> {
     let mut v: Vec<(usize, usize)> = Vec::new();
     for r in 0..sudoku.dimensions {
         for c in 0..sudoku.dimensions {

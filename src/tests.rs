@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod tests {
+    use crate::generator;
     use crate::helpers;
     use crate::solvers;
 
@@ -147,5 +148,66 @@ jpgbn 0alo2 36h1c m487f ked95
         let expected = SUDOKU25_E;
         let actual = process(vector.to_string(), None);
         assert_eq!(expected, actual);
+    }
+
+    fn generator_test(generator: &generator::Generator) {
+        let valid = generator.validate_generator();
+        assert!(valid);
+        let some_golden = generator::generate_golden(generator);
+        let golden;
+        if let Some(g) = some_golden {
+            golden = g;
+        } else {
+            assert!(false, "Did not generate any initial solution!");
+            return;
+        }
+        println!("Generated golden soluton:");
+        println!("{}", golden.to_string());
+        let some_challenge = generator::generate_challenge(generator, &golden);
+        let challenge;
+        if let Some(c) = some_challenge {
+            challenge = c;
+        } else {
+            assert!(false, "Did not generate any challenge sudoku!");
+            return;
+        }
+        println!("Generated challenge:");
+        println!("{}", challenge.to_string());
+        let mut sudoku = challenge.clone();
+        let solved = solvers::solve(&mut sudoku, None);
+        assert!(solved);
+        println!("Generated Solution:");
+        println!("{}", sudoku.to_string());
+        assert_eq!(golden.to_string(), sudoku.to_string());
+    }
+
+    #[test]
+    fn test_gen_6x6() {
+        for _i in 0..10 {
+            println!("Test iteration: {} ", _i);
+            let generator = generator::Generator {
+                dimensions: 6,
+                grid_width: 3,
+                grid_height: 2,
+                charset: "123456".to_string(),
+                max_prune_seconds: 10,
+            };
+            generator_test(&generator);
+        }
+    }
+
+    #[test]
+    fn test_gen_9x9() {
+        for _i in 0..10 {
+            println!("Test iteration: {} ", _i);
+            let generator = generator::Generator {
+                dimensions: 9,
+                grid_width: 3,
+                grid_height: 3,
+                charset: "123456789".to_string(),
+                max_prune_seconds: 10,
+            };
+            generator_test(&generator);
+        }
     }
 }
