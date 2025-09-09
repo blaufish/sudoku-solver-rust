@@ -113,11 +113,12 @@ jpgbn 0alo2 36h1c m487f ked95
 
     fn process(testvector: String, strat: Option<&str>) -> String {
         let mut sudoku;
-        match helpers::parse(testvector) {
+        match helpers::parse(testvector.clone()) {
             Ok(s) => sudoku = s,
             Err(_) => return String::from(""),
         }
-        let _ = solvers::solve(&mut sudoku, strat);
+        let solved = solvers::solve(&mut sudoku, strat);
+        assert_eq!(true, solved, "error solving: {}", testvector);
         sudoku.to_string()
     }
 
