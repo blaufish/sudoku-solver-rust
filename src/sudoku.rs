@@ -113,4 +113,63 @@ impl Sudoku {
         }
         s
     }
+
+    pub fn validate(&self) -> (bool, Vec<(usize, usize, String)>) {
+        let mut errors: Vec<(usize, usize, String)> = Vec::new();
+        let mut valid = true;
+        for row in 0..self.dimensions {
+            for col in 0..self.dimensions {
+                if self.board[row][col] == 0 {
+                    valid = false;
+                    errors.push((row, col, "unset".to_string()));
+                }
+            }
+        }
+        for row in 0..self.dimensions {
+            let mut utilized: u32 = 0;
+            for col in 0..self.dimensions {
+                if self.board[row][col] == 0 {
+                    continue;
+                }
+                if self.board[row][col] & utilized != 0 {
+                    valid = false;
+                    errors.push((row, col, "duplicated in row".to_string()));
+                }
+                utilized = utilized | self.board[row][col];
+            }
+        }
+        for col in 0..self.dimensions {
+            let mut utilized: u32 = 0;
+            for row in 0..self.dimensions {
+                if self.board[row][col] == 0 {
+                    continue;
+                }
+                if self.board[row][col] & utilized != 0 {
+                    valid = false;
+                    errors.push((row, col, "duplicated in col".to_string()));
+                }
+                utilized = utilized | self.board[row][col];
+            }
+        }
+        for grid_h in 0..self.dimensions / self.grid_height {
+            for grid_w in 0..self.dimensions / self.grid_width {
+                let mut utilized: u32 = 0;
+                for pre_row in 0..self.grid_height {
+                    for pre_col in 0..self.grid_width {
+                        let row = grid_h * self.grid_height + pre_row;
+                        let col = grid_w * self.grid_width + pre_col;
+                        if self.board[row][col] == 0 {
+                            continue;
+                        }
+                        if self.board[row][col] & utilized != 0 {
+                            valid = false;
+                            errors.push((row, col, "duplicated in grid".to_string()));
+                        }
+                        utilized = utilized | self.board[row][col];
+                    }
+                }
+            }
+        }
+        (valid, errors)
+    }
 }

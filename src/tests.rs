@@ -153,16 +153,23 @@ jpgbn 0alo2 36h1c m487f ked95
     fn generator_test(generator: &generator::Generator) {
         let valid = generator.validate_generator();
         assert!(valid);
+
+        println!("Generated golden soluton:");
         let some_golden = generator::generate_golden(generator);
         let golden;
         if let Some(g) = some_golden {
-            golden = g;
+            golden = g.clone();
+            let (valid_golden, errors) = g.validate();
+            for (row, col, s) in errors {
+                println!("Error: {} {} {}", row, col, s);
+            }
+            assert!(valid_golden);
         } else {
             assert!(false, "Did not generate any initial solution!");
             return;
         }
-        println!("Generated golden soluton:");
         println!("{}", golden.to_string());
+
         let some_challenge = generator::generate_challenge(generator, &golden);
         let challenge;
         if let Some(c) = some_challenge {
@@ -173,11 +180,19 @@ jpgbn 0alo2 36h1c m487f ked95
         }
         println!("Generated challenge:");
         println!("{}", challenge.to_string());
+
         let mut sudoku = challenge.clone();
         let solved = solvers::solve(&mut sudoku, None);
         assert!(solved);
         println!("Generated Solution:");
         println!("{}", sudoku.to_string());
+        {
+            let (valid_solution, errors) = &sudoku.validate();
+            for (row, col, s) in errors {
+                println!("Error: {} {} {}", row, col, s);
+            }
+            assert!(valid_solution);
+        }
         assert_eq!(golden.to_string(), sudoku.to_string());
     }
 
