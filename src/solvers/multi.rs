@@ -53,36 +53,47 @@ fn next_moves(sudoku: &sudoku::Sudoku) -> Option<(usize, usize, Vec<u32>)> {
     let mut table = Table::new();
     table.populate(sudoku);
     let mut result: Option<(usize, usize, Vec<u32>)> = None;
-    for row in 0..sudoku.dimensions {
-        let utilized_row = table.rows[row];
-        for col in 0..sudoku.dimensions {
-            if sudoku.board[row][col] != 0 {
-                continue;
-            }
-            let utilized_col = table.cols[col];
-            let grid_row = row / sudoku.grid_height;
-            let grid_col = col / sudoku.grid_width;
-            let utilized_grid = table.grids[grid_row][grid_col];
-            let utilized = utilized_row | utilized_col | utilized_grid;
-            let mut moves: Vec<u32> = Vec::new();
-            for i in 0..sudoku.dimensions {
-                let binary: u32 = 1 << i;
-                if binary & utilized != 0 {
-                    continue;
-                }
-                moves.push(binary);
-            }
-            if moves.len() == 0 {
-                //Board is in a bad state, a cell cannot accept any moves
-                return None;
-            }
-            match result {
-                None => result = Some((row, col, moves)),
-                Some((r, c, old_moves)) => {
-                    if moves.len() < old_moves.len() {
-                        result = Some((row, col, moves));
-                    } else {
-                        result = Some((r, c, old_moves));
+    for grid_row in 0..(sudoku.dimensions / sudoku.grid_height) {
+        for grid_col in 0..(sudoku.dimensions / sudoku.grid_width) {
+            let row_base = grid_row * sudoku.grid_height;
+            let col_base = grid_col * sudoku.grid_width;
+            for r in 0..sudoku.grid_height {
+                for c in 0..sudoku.grid_width {
+                    let row = row_base + r;
+                    let col = col_base + c;
+                    if sudoku.board[row][col] != 0 {
+                        continue;
+                    }
+
+                    let utilized_grid = table.grids[grid_row][grid_col];
+                    let utilized_row = table.rows[row];
+                    let utilized_col = table.cols[col];
+                    let utilized = utilized_row | utilized_col | utilized_grid;
+                    let mut moves: Vec<u32> = Vec::new();
+                    for i in 0..sudoku.dimensions {
+                        let binary: u32 = 1 << i;
+                        if binary & utilized != 0 {
+                            continue;
+                        }
+                        moves.push(binary);
+                    }
+                    if moves.len() == 0 {
+                        //Board is in a bad state, a cell cannot accept any moves
+                        return None;
+                    }
+                    if moves.len() == 1 {
+                        //We found easiest move, exit early
+                        return Some((row, col, moves));
+                    }
+                    match result {
+                        None => result = Some((row, col, moves)),
+                        Some((r, c, old_moves)) => {
+                            if moves.len() < old_moves.len() {
+                                result = Some((row, col, moves));
+                            } else {
+                                result = Some((r, c, old_moves));
+                            }
+                        }
                     }
                 }
             }
