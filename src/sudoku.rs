@@ -172,4 +172,28 @@ impl Sudoku {
         }
         (valid, errors)
     }
+
+    pub fn equals(&self, other: &Sudoku) -> bool {
+        return sudoku_equals(self, other);
+    }
+}
+
+fn sudoku_equals(a: &Sudoku, b: &Sudoku) -> bool {
+    if a.dimensions != b.dimensions {
+        return false;
+    }
+    if a.grid_height != b.grid_height {
+        return false;
+    }
+    if a.grid_width != b.grid_width {
+        return false;
+    }
+    for row in 0..a.dimensions {
+        for col in 0..a.dimensions {
+            if a.board[row][col] != b.board[row][col] {
+                return false;
+            }
+        }
+    }
+    true
 }
