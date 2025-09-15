@@ -304,6 +304,21 @@ jpgbn 0alo2 36h1c m487f ked95
     }
 
     #[test]
+    fn test_gen_4x4() {
+        for _i in 0..10 {
+            println!("Test iteration: {} ", _i);
+            let generator = generator::Generator {
+                dimensions: 4,
+                grid_width: 2,
+                grid_height: 2,
+                charset: "1234".to_string(),
+                max_prune_seconds: 10,
+            };
+            generator_test(&generator);
+        }
+    }
+
+    #[test]
     fn test_gen_6x6() {
         for _i in 0..10 {
             println!("Test iteration: {} ", _i);

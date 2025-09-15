@@ -70,6 +70,52 @@ fn fill_grid(sudoku: &mut sudoku::Sudoku, grid_row: usize, grid_col: usize) {
 }
 
 pub fn generate_golden(generator: &Generator) -> Option<sudoku::Sudoku> {
+    if generator.dimensions > 4 {
+        return generate_golden_large(generator);
+    } else {
+        return generate_golden_small(generator);
+    }
+}
+
+fn generate_golden_small(generator: &Generator) -> Option<sudoku::Sudoku> {
+    let mut sudoku = sudoku::Sudoku::new(
+        generator.dimensions,
+        generator.grid_height,
+        generator.grid_width,
+        generator.charset.clone(),
+    );
+    for r in 0..generator.dimensions / generator.grid_height {
+        for c in 0..generator.dimensions / generator.grid_width {
+            let sudoku_reset = sudoku.clone();
+            fill_grid(&mut sudoku, r, c);
+            let sudoku_new = sudoku.clone();
+            let mut ignore: Vec<sudoku::Sudoku> = Vec::new();
+            let mut vec = solve(&mut sudoku, 1, &mut ignore);
+            match vec.pop() {
+                None => sudoku = sudoku_reset.clone(),
+                Some(solution) => {
+                    let (valid, _) = solution.validate();
+                    //println!("valid: {}", valid);
+                    if valid {
+                        sudoku = sudoku_new.clone();
+                    } else {
+                        sudoku = sudoku_reset.clone();
+                    }
+                }
+            }
+        }
+    }
+    {
+        let mut ignore: Vec<sudoku::Sudoku> = Vec::new();
+        let mut vec = solve(&mut sudoku, 1, &mut ignore);
+        match vec.len() {
+            0 => None,
+            _ => vec.pop(),
+        }
+    }
+}
+
+fn generate_golden_large(generator: &Generator) -> Option<sudoku::Sudoku> {
     let mut sudoku = sudoku::Sudoku::new(
         generator.dimensions,
         generator.grid_height,
