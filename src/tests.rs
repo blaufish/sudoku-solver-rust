@@ -28,22 +28,22 @@ __🎆 ___ __🐡";
 💩🍕🎌 🏠🐙🐡 🍅🌈🎆
 🏠🍅🎆 🍕🌈💩 🐙🎌🐡";
 
-    const SUDOKU6_V: &str = "___ ___
-2__ 1__
+    const SUDOKU6_V: &str = "_13 ___
+__6 ___
 
-1__ _6_
-_5_ ___
+___ _5_
+___ _64
 
-___ __2
-6_2 _41";
+4__ ___
+_32 5__";
 
-    const SUDOKU6_E: &str = "561 423
-243 156
+    const SUDOKU6_E: &str = "513 426
+246 315
 
-124 365
-356 214
+164 253
+325 164
 
-415 632
+451 632
 632 541";
 
     const SUDOKU9_V: &str = "_7_ ___ 342
@@ -209,8 +209,6 @@ jpgbn 0alo2 36h1c m487f ked95
         }
     }
 
-    //TODO Two valid solutions to this challenge sudoku?
-    #[ignore]
     #[test]
     fn test_solve_6x6() {
         let vector = SUDOKU6_V;
