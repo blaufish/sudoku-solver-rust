@@ -84,6 +84,14 @@ fn operation_solve(file: std::path::PathBuf, solve_strategy: Option<String>) -> 
 
     println!("Solved: {}", solved);
     println!("{}", &sudoku.to_string());
+    {
+        let (valid, errs) = sudoku.validate();
+        if !valid {
+            for (row, col, reason) in errs {
+                eprintln!("Error: row:{} col:{} reason:{}", row, col, reason);
+            }
+        }
+    }
     Ok(())
 }
 
@@ -105,6 +113,17 @@ fn operation_generate(generator: generator::Generator, count: usize) {
         }
         println!("Solution:");
         println!("{}", golden.to_string());
+
+        {
+            let (valid, errs) = golden.validate();
+            if !valid {
+                for (row, col, reason) in errs {
+                    eprintln!("Error: row:{} col:{} reason:{}", row, col, reason);
+                }
+                return ();
+            }
+        }
+
         println!("Generating challenge...");
         let start2 = Instant::now();
         let result = generator::generate_challenge(&generator, &golden);
