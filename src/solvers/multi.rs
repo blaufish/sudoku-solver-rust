@@ -49,7 +49,7 @@ fn solve_inner_inner(sudoku: &mut sudoku::Sudoku, restorepoint: &mut Vec<(usize,
 }
 
 //Prioritize solving easy squares early, hopefully reducing level of recursion
-fn next_moves(sudoku: &mut sudoku::Sudoku) -> Option<(usize, usize, Vec<u32>)> {
+fn next_moves(sudoku: &sudoku::Sudoku) -> Option<(usize, usize, Vec<u32>)> {
     let mut table = Table::new();
     table.populate(sudoku);
     let mut result: Option<(usize, usize, Vec<u32>)> = None;
