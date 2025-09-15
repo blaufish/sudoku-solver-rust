@@ -28,6 +28,24 @@ __🎆 ___ __🐡";
 💩🍕🎌 🏠🐙🐡 🍅🌈🎆
 🏠🍅🎆 🍕🌈💩 🐙🎌🐡";
 
+    const SUDOKU6_V: &str = "___ ___
+2__ 1__
+
+1__ _6_
+_5_ ___
+
+___ __2
+6_2 _41";
+
+    const SUDOKU6_E: &str = "561 423
+243 156
+
+124 365
+356 214
+
+415 632
+632 541";
+
     const SUDOKU9_V: &str = "_7_ ___ 342
 46_ _2_ 7__
 32_ _7_ 068
@@ -51,6 +69,54 @@ ___ _1_ 6__
 186 347 250
 247 510 683
 053 682 174";
+
+    const SUDOKU9_V2: &str = "___ __6 7__
+1_5 __8 ___
+36_ ___ 42_
+
+_2_ ___ 13_
+459 ___ 68_
+6__ ___ __9
+
+___ __1 ___
+_31 _5_ ___
+8__ 3__ _5_";
+
+    const SUDOKU9_E2: &str = "982 436 715
+145 728 396
+367 519 428
+
+728 695 134
+459 173 682
+613 842 579
+
+576 281 943
+231 954 867
+894 367 251";
+
+    const SUDOKU9_V3: &str = "6_1 __2 __4
+_8_ ___ ___
+_7_ 8_5 _3_
+
+7_9 _3_ ___
+___ ___ 9__
+4__ ___ _58
+
+__8 5__ 2__
+_43 9__ _17
+___ ___ _4_";
+
+    const SUDOKU9_E3: &str = "691 372 584
+385 614 729
+274 895 136
+
+759 238 461
+836 451 972
+412 769 358
+
+168 547 293
+543 926 817
+927 183 645";
 
     const SUDOKU25_V: &str = "_9_c_ __f_g mh__e _jak_ 6lb__
 ln_4e __d__ 1_983 2____ ____k
@@ -120,6 +186,15 @@ jpgbn 0alo2 36h1c m487f ked95
         }
         let solved = solvers::solve(&mut sudoku, strat);
         assert_eq!(true, solved, "error solving: {}", testvector);
+        let (valid, errs) = sudoku.validate();
+        if !valid {
+            eprintln!("Failed to solve: {}", testvector);
+            eprintln!("Invalid solution: {}", sudoku.to_string());
+        }
+        for (row, col, reason) in errs {
+            eprintln!("Error! row:{} col:{} reason:{}", row, col, reason);
+        }
+        assert!(valid);
         sudoku.to_string()
     }
 
@@ -135,7 +210,39 @@ jpgbn 0alo2 36h1c m487f ked95
     }
 
     #[test]
-    fn test_unicode() {
+    fn test_solve_6x6() {
+        let vector = SUDOKU6_V;
+        let expected = SUDOKU6_E;
+        let actual = process(vector.to_string(), None);
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn test_solve_9x9() {
+        let vector = SUDOKU9_V;
+        let expected = SUDOKU9_E;
+        let actual = process(vector.to_string(), None);
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn test_solve_9x9_2() {
+        let vector = SUDOKU9_V2;
+        let expected = SUDOKU9_E2;
+        let actual = process(vector.to_string(), None);
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn test_solve_9x9_3() {
+        let vector = SUDOKU9_V3;
+        let expected = SUDOKU9_E3;
+        let actual = process(vector.to_string(), None);
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn test_solve_9x9_unicode() {
         let vector = UNICODE_V;
         let expected = UNICODE_E;
         let actual = process(vector.to_string(), None);
@@ -143,7 +250,7 @@ jpgbn 0alo2 36h1c m487f ked95
     }
 
     #[test]
-    fn test_25x25() {
+    fn test_solve_25x25() {
         let vector = SUDOKU25_V;
         let expected = SUDOKU25_E;
         let actual = process(vector.to_string(), None);
