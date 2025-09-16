@@ -172,13 +172,9 @@ impl Sudoku {
         }
         (valid, errors)
     }
-
-    pub fn equals(&self, other: &Sudoku) -> bool {
-        return sudoku_equals(self, other);
-    }
 }
 
-fn sudoku_equals(a: &Sudoku, b: &Sudoku) -> bool {
+fn _sudoku_equals(a: &Sudoku, b: &Sudoku) -> bool {
     if a.dimensions != b.dimensions {
         return false;
     }

@@ -1,4 +1,4 @@
-use crate::solvers::backtrack_for_generator::solve;
+use crate::solvers::solve;
 use crate::sudoku;
 
 use rand::prelude::*;
@@ -89,28 +89,25 @@ fn generate_golden_small(generator: &Generator) -> Option<sudoku::Sudoku> {
             let sudoku_reset = sudoku.clone();
             fill_grid(&mut sudoku, r, c);
             let sudoku_new = sudoku.clone();
-            let mut ignore: Vec<sudoku::Sudoku> = Vec::new();
-            let mut vec = solve(&mut sudoku, 1, &mut ignore);
-            match vec.pop() {
-                None => sudoku = sudoku_reset.clone(),
-                Some(solution) => {
-                    let (valid, _) = solution.validate();
-                    //println!("valid: {}", valid);
-                    if valid {
-                        sudoku = sudoku_new.clone();
-                    } else {
-                        sudoku = sudoku_reset.clone();
-                    }
+            let solved = solve(&mut sudoku, None);
+            if solved {
+                let (valid, _) = sudoku.validate();
+                //println!("valid: {}", valid);
+                if valid {
+                    sudoku = sudoku_new.clone();
+                } else {
+                    sudoku = sudoku_reset.clone();
                 }
+            } else {
+                sudoku = sudoku_reset.clone();
             }
         }
     }
     {
-        let mut ignore: Vec<sudoku::Sudoku> = Vec::new();
-        let mut vec = solve(&mut sudoku, 1, &mut ignore);
-        match vec.len() {
-            0 => None,
-            _ => vec.pop(),
+        let solved = solve(&mut sudoku, None);
+        match solved {
+            false => None,
+            true => Some(sudoku),
         }
     }
 }
@@ -136,13 +133,11 @@ fn generate_golden_large(generator: &Generator) -> Option<sudoku::Sudoku> {
     for i in 0..grid_dim {
         fill_grid(&mut sudoku, i, i);
     }
-    let mut ignore: Vec<sudoku::Sudoku> = Vec::new();
-    let vec = solve(&mut sudoku, 1, &mut ignore);
-    for v in vec {
-        return Some(v);
+    let solved = solve(&mut sudoku, None);
+    if !solved {
+        return None;
     }
-    //println!("Could not find any solution?");
-    None
+    Some(sudoku)
 }
 
 fn get_empty_cells(sudoku: sudoku::Sudoku) -> Vec<(usize, usize)> {
@@ -173,6 +168,38 @@ fn get_none_empty_cells(sudoku: sudoku::Sudoku) -> Vec<(usize, usize)> {
     v
 }
 
+fn try_remove(sudoku: &mut sudoku::Sudoku, row: usize, col: usize) {
+    let tmp = sudoku.board[row][col];
+    let charset_len = sudoku.character_set.chars().count();
+    let mut sudoku2 = sudoku.clone();
+
+    sudoku2.board[row][col] = 0;
+    let utilized_grid = sudoku2.utilized_grid(row, col);
+    let utilized_row = sudoku2.utilized_row(row);
+    let utilized_col = sudoku2.utilized_col(col);
+    let utilized = utilized_grid | utilized_row | utilized_col;
+
+    for i in 0..charset_len {
+        let binary: u32 = 1 << i;
+        if tmp == binary {
+            // This is the correct sudoku, no need to validate.
+            continue;
+        }
+        if utilized & binary != 0 {
+            //This value cannot be picked, not an option!
+            continue;
+        }
+        sudoku2.board[row][col] = binary;
+        let solved = solve(&mut sudoku2, None);
+        if solved {
+            //An alernative solution was found, this branch is poisoned!
+            return;
+        }
+    }
+    //No wrong solutions found, unfill this cell.
+    sudoku.board[row][col] = 0;
+}
+
 pub fn generate_challenge(
     generator: &Generator,
     golden: &sudoku::Sudoku,
@@ -199,12 +226,8 @@ pub fn generate_challenge(
         //row = cell.row;
         //col = cell.col;
         (row, col) = cell;
-        let tmp = sudoku.board[row][col];
-        sudoku.board[row][col] = 0;
-        let vec = solve(&mut sudoku, 1, &mut ignore);
-        if vec.len() != 0 {
-            sudoku.board[row][col] = tmp;
-        }
+
+        try_remove(&mut sudoku, row, col);
     }
     return Some(sudoku);
 }

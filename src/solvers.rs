@@ -2,8 +2,6 @@ use crate::sudoku;
 mod backtrack;
 mod multi;
 
-pub mod backtrack_for_generator;
-
 const BACKTRACK: &str = "backtrack";
 const MULTI: &str = "mutli";
 
