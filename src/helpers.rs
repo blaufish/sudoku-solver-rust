@@ -75,6 +75,10 @@ pub fn parse(contents: String) -> io::Result<sudoku::Sudoku> {
             subsquare_height = 5;
             subsquare_width = 5;
         }
+        30 => {
+            subsquare_height = 5;
+            subsquare_width = 6;
+        }
         36 => {
             subsquare_height = 6;
             subsquare_width = 6;
