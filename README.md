@@ -1,8 +1,10 @@
-A simple sudoku solver, ultra beta quality...
+A simple sudoku solver.
 
-Supports arbitrary character sets, e.g. 1-9, 0-9, 0-9A-F.
-Or whatever, parser attempts to understand anything.
-Text files must represent unknown/unset as either `_` or `.`.
+Supports arbitrary character sets, e.g. `1-9`, `0-9`, `0-9A-F`.
+Or unicode like `🐡💩🐙`.
+Or whatever.
+The parser attempts to understand anything.
+Text files must represent unknown/unset cells as either `_` or `.`.
 
 Supports 9x9 mode and less common modes.
 Supported modes:
@@ -13,11 +15,13 @@ Supported modes:
 |    9x9 |     3x3 | Symetric                                 |
 |  16x16 |     4x4 | Symetric                                 |
 |  25x25 |     5x5 | Symetric                                 |
+|  36x36 |     6x6 | Symetric                                 |
 |    1x1 |     1x1 | Some silly base cases...                 |
 |    3x3 |     3x3 | Some silly base cases...                 |
-|    6x6 |     3x2 | Asymetric, wide (more columns than rows) |
-|  12x12 |     4x3 | Asymetric, wide (more columns than rows) |
-|  20x20 |     5x4 | Asymetric, wide (more columns than rows) |
+|    6x6 |     3x2 | Asymetric, wide gird (more columns than rows) |
+|  12x12 |     4x3 | Asymetric, wide grid (more columns than rows) |
+|  20x20 |     5x4 | Asymetric, wide grid (more columns than rows) |
+|  30x30 |     6x5 | Asymetric, wide grid (more columns than rows) |
 
 ## Usage
 
@@ -271,10 +275,10 @@ __g_n _a___ _6___ _____ ke_9_
 
 ## Implementation details
 
-Internally represents the sudoku board as 2x2 array of `u32`.
+Internally represents the sudoku board as two-dimensional array of `u64`.
 
 ``` rust
-    pub board: [[u32; 16]; 16],
+    pub board: [[u64; MAX_DIMENSIONS]; MAX_DIMENSIONS],
 ```
 
 Values are represented as follows:
