@@ -29,7 +29,7 @@ fn solve_inner_inner(sudoku: &mut sudoku::Sudoku, restorepoint: &mut Vec<(usize,
     let moves = next_moves(sudoku);
     let row: usize;
     let col: usize;
-    let values: Vec<u32>;
+    let values: Vec<u64>;
     if let Some((r, c, v)) = moves {
         row = r;
         col = c;
@@ -49,10 +49,10 @@ fn solve_inner_inner(sudoku: &mut sudoku::Sudoku, restorepoint: &mut Vec<(usize,
 }
 
 //Prioritize solving easy squares early, hopefully reducing level of recursion
-fn next_moves(sudoku: &sudoku::Sudoku) -> Option<(usize, usize, Vec<u32>)> {
+fn next_moves(sudoku: &sudoku::Sudoku) -> Option<(usize, usize, Vec<u64>)> {
     let mut table = Table::new();
     table.populate(sudoku);
-    let mut result: Option<(usize, usize, Vec<u32>)> = None;
+    let mut result: Option<(usize, usize, Vec<u64>)> = None;
     for grid_row in 0..(sudoku.dimensions / sudoku.grid_height) {
         for grid_col in 0..(sudoku.dimensions / sudoku.grid_width) {
             let row_base = grid_row * sudoku.grid_height;
@@ -69,9 +69,9 @@ fn next_moves(sudoku: &sudoku::Sudoku) -> Option<(usize, usize, Vec<u32>)> {
                     let utilized_row = table.rows[row];
                     let utilized_col = table.cols[col];
                     let utilized = utilized_row | utilized_col | utilized_grid;
-                    let mut moves: Vec<u32> = Vec::new();
+                    let mut moves: Vec<u64> = Vec::new();
                     for i in 0..sudoku.dimensions {
-                        let binary: u32 = 1 << i;
+                        let binary: u64 = 1 << i;
                         if binary & utilized != 0 {
                             continue;
                         }
@@ -131,10 +131,10 @@ fn deduce_cell_locked_obvious(
                         let utilized_row = table.rows[row];
                         let utilized_col = table.cols[col];
                         let utilized = utilized_row | utilized_col | utilized_grid;
-                        let mut binary: u32 = 0;
+                        let mut binary: u64 = 0;
                         let mut count = 0;
                         for i in 0..sudoku.dimensions {
-                            let bin: u32 = 1 << i;
+                            let bin: u64 = 1 << i;
                             if bin & utilized != 0 {
                                 continue;
                             }

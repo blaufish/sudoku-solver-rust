@@ -8,8 +8,8 @@ pub fn solve(sudoku: &mut sudoku::Sudoku) -> bool {
 }
 
 //Prioritize solving easy squares early, hopefully reducing level of recursion
-fn next_moves(sudoku: &sudoku::Sudoku, table: &Table) -> Option<(usize, usize, Vec<u32>)> {
-    let mut result: Option<(usize, usize, Vec<u32>)> = None;
+fn next_moves(sudoku: &sudoku::Sudoku, table: &Table) -> Option<(usize, usize, Vec<u64>)> {
+    let mut result: Option<(usize, usize, Vec<u64>)> = None;
     for row in 0..sudoku.dimensions {
         let utilized_row = table.rows[row];
         for col in 0..sudoku.dimensions {
@@ -21,9 +21,9 @@ fn next_moves(sudoku: &sudoku::Sudoku, table: &Table) -> Option<(usize, usize, V
             let grid_col = col / sudoku.grid_width;
             let utilized_grid = table.grids[grid_row][grid_col];
             let utilized = utilized_row | utilized_col | utilized_grid;
-            let mut moves: Vec<u32> = Vec::new();
+            let mut moves: Vec<u64> = Vec::new();
             for i in 0..sudoku.dimensions {
-                let binary: u32 = 1 << i;
+                let binary: u64 = 1 << i;
                 if binary & utilized != 0 {
                     continue;
                 }
@@ -67,7 +67,7 @@ fn solve_inner(sudoku: &mut sudoku::Sudoku, table: &mut Table) -> bool {
     let moves = next_moves(&sudoku, &table);
     let row: usize;
     let col: usize;
-    let values: Vec<u32>;
+    let values: Vec<u64>;
     if let Some((r, c, v)) = moves {
         row = r;
         col = c;

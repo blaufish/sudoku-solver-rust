@@ -178,6 +178,91 @@ jpgbn 0alo2 36h1c m487f ked95
 0cm8l f7hdb 2j5n4 pkoe9 3a6g1
 215k7 gp439 dbaef 0n6hl moj8c";
 
+
+    const SUDOKU36_V: &str = "hw_r__ _tfv8_ 0pz_j_ n_c4__ yx_g59 l6__i3
+____2_ _0oi__ x6y5tu _8_eh_ ak_7_f jg__4_
+_1_tb_ __u_x_ 4_e9__ v_f__y l_____ 0_sw_z
+ifz___ _l_g_A __3_c_ _0j9t_ _d6__e __58x_
+3_gv__ _j4n__ 8iAflw _7___2 _ps_0_ ___h_k
+me4_jx w_yzc5 7gk_on __l6__ _u8i_v b__921
+
+v0c___ b8dy__ 3_ie7_ _l_pwt ___9kh 25_jrs
+__j___ 0p_7A_ _d_k_y r6xh_v _83tul _c__1a
+Ax_4__ 5_2_m_ u_l_b_ g____7 caisp_ evhko_
+_7p8ub __jl_9 f20_z_ c5nsi1 r_4_m_ wy3_d_
+_h_l_w vk__sa gcpt_6 __0_Aj 5f___b z8i4__
+2gd_ia x3tcf_ h9rs58 z4kb_o _v__10 __l6_m
+
+_mAi_j yn0x2_ 6_1p3a fc5ws4 ____lz udvg9r
+_4__lv c5__1_ 2wdue_ xhA_m_ __yo_k tf____
+__0_rz _d_ke_ ot_g__ un_ylb _i_m__ xhw_A4
+bne6p8 l__hjg ___v0x _i_o__ d3_us_ y_z__2
+uow_yh 4__t3_ ir____ _2d_ae n5_A__ _l80_p
+a_s___ 8iz__w l__j_5 3_p07r 291vx_ _bke6o
+
+lu__5_ ___3k_ bng__m __sr__ vj_w8t 9_02__
+_6a__m fg___8 5__h2z 7_1_u_ sl__9n 3_dv_i
+n__20r ____lc _xv_pi _w_tz3 om___1 au6__g
+_s_z94 jh__n_ _7f__3 _pil_a _65y_d __oc_e
+_p____ mu_2o_ js9__0 8y_n5_ 7___ex k4__b_
+__fh7o zyA_vp ek_ral _m___9 ib2c3u __t_8_
+
+__6y__ o__m0k 9l_i__ __2u_h 3_x_d5 _eb1j8
+__o_xi A_1arf kus_6c bt_54d 8__lvg h__p_9
+f8___k n___dl w0bo_p _j_7__ e1__zs i3r_t_
+__9_w_ px__yt z5n4_2 moe1_i 0_u_Aa _k7fld
+cr_u__ e__j__ d8_3_g k__a9_ ___4_i 6_y_nA
+dv_5_0 7_9bi_ 1ej__t l_8cn_ 6_f__m _sa___
+
+_ivcm5 s_3e_2 ___7A_ 4_of6l z_w_tr 80j_k_
+_au_s_ _95dzj _mx__4 tb_8kn f_v0_2 oA1l3c
+4_x__2 ___fgn c_ol9_ ___305 ___1y_ 7weav_
+r_b7_y uam_40 pftw8e _19_cs k_A6i_ __xd__
+__13_f _c_r_x a____b _z7_eg _4_5_j _9ptmh
+0_n_ze h_v_7y _356_k d_m___ ____ac gi4_f_";
+
+    const SUDOKU36_E: &str = "hw7rad 1tfv8e 0pz2js nkc4ou yxbg59 l6mAi3
+s9lp2A 30oibd x6y5tu 18wehz akm7rf jgcn4v
+815tbn k6upxh 4ae9mr vdfigy l2c3jA 0osw7z
+ifzkou 2l7gaA v13bch s0j9tm 4d6nwe pr58xy
+3ygvc6 rj4n9m 8iAflw 57axb2 1psz0o dtuhek
+me40jx wsyzc5 7gkdon p3l6rA tu8ihv baf921
+
+v0cmf1 b8dy64 3Aie7o alupwt xzn9kh 25gjrs
+z5jons 0pe7Ai md4kwy r6xh2v g83tul fc9b1a
+Axt469 5r2wmz ujlnb1 gf3d87 caispy evhko0
+k7p8ub gojlh9 f20azv c5nsi1 rA4em6 wy3xdt
+yhrl3w vkn1sa gcptx6 e90mAj 5fod2b z8i4u7
+2gdeia x3tcfu h9rs58 z4kbyo wv7j10 Anl6pm
+
+7mAikj yn0x2o 6b1p3a fc5ws4 hte8lz udvg9r
+g439lv c5ps1r 2wdue7 xhAzm8 b0yo6k tfniaj
+5201rz 9d6ke7 ot8gsf unvylb jiamcp xhw3A4
+bne6p8 lfahjg A4mv0x 9ito1k d3rusw y7z5c2
+uowxyh 4mbt3v irczk9 62djae n5gAf7 1l80sp
+acsfdt 8izAuw lyhjn5 3gp07r 291vx4 mbke6o
+
+luyA5c a7i3k6 bng14m oesrdx vjzw8t 9p02hf
+x6abem fgr4t8 5owh2z 7A1kuc sl0p9n 3jdvyi
+nj820r des9lc yxvApi hwbtz3 omkf41 au675g
+1skz94 jhx0nb t7f8u3 2pilva A65ygd rmocwe
+tpigv3 muw2o1 js9cd0 8y6n5f 7rhaex k4Azbl
+wdfh7o zyA5vp ek6ral 0m4gj9 ib2c3u n1ts8x
+
+pz6yt7 o4gm0k 9laivA ws2ufh 3nxrd5 ceb1j8
+e3onxi Aw1arf kusm6c bty54d 87jlvg hz2p09
+f8ha4k nvcudl w0boyp Ajg7x6 e192zs i3rmt5
+jb9swg px86yt z5n4r2 moe13i 0cuhAa vk7fld
+crmu1l e2hj5s d873fg kvza90 pwt4bi 6xyonA
+dv25A0 7z9bi3 1ejxht lr8cnp 6yfkom 4saugw
+
+9ivcm5 s13ep2 nhu7Ad 4aof6l zgwxtr 80jykb
+6auwsp i95dzj rmxyg4 tbh8kn fev072 oA1l3c
+4Axdh2 tbkfgn czol9j iur305 msp1y8 7weav6
+rlb7gy uamo40 pftw8e j19vcs khA6i3 52xdzn
+ok138f 6clrwx av20ib yz7Aeg u4d5nj s9ptmh
+0tnjze hAv87y s3561k dxm2pw 9olbac gi4rfu";
+
     fn process(testvector: String, strat: Option<&str>) -> String {
         let mut sudoku;
         match helpers::parse(testvector.clone()) {
@@ -253,6 +338,14 @@ jpgbn 0alo2 36h1c m487f ked95
     fn test_solve_25x25() {
         let vector = SUDOKU25_V;
         let expected = SUDOKU25_E;
+        let actual = process(vector.to_string(), None);
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn test_solve_36x36() {
+        let vector = SUDOKU36_V;
+        let expected = SUDOKU36_E;
         let actual = process(vector.to_string(), None);
         assert_eq!(expected, actual);
     }

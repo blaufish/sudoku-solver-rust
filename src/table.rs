@@ -3,9 +3,9 @@ use crate::sudoku::MAX_DIMENSIONS;
 use crate::sudoku::MAX_GRID_DIMENSIONS;
 
 pub struct Table {
-    pub rows: [u32; MAX_DIMENSIONS],
-    pub cols: [u32; MAX_DIMENSIONS],
-    pub grids: [[u32; MAX_GRID_DIMENSIONS]; MAX_GRID_DIMENSIONS],
+    pub rows: [u64; MAX_DIMENSIONS],
+    pub cols: [u64; MAX_DIMENSIONS],
+    pub grids: [[u64; MAX_GRID_DIMENSIONS]; MAX_GRID_DIMENSIONS],
 }
 
 impl Table {

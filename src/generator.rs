@@ -46,10 +46,10 @@ impl Generator {
     }
 }
 
-fn get_random_grid(dimensions: usize) -> Vec<u32> {
+fn get_random_grid(dimensions: usize) -> Vec<u64> {
     let mut rng = rand::rng();
-    let mut vec: Vec<u32> = Vec::new();
-    let mut binary: u32 = 1;
+    let mut vec: Vec<u64> = Vec::new();
+    let mut binary: u64 = 1;
     for _i in 0..dimensions {
         vec.push(binary);
         binary = binary << 1;
@@ -59,9 +59,9 @@ fn get_random_grid(dimensions: usize) -> Vec<u32> {
 }
 
 fn fill_grid(sudoku: &mut sudoku::Sudoku, grid_row: usize, grid_col: usize) {
-    let random_grid: Vec<u32> = get_random_grid(sudoku.dimensions);
+    let random_grid: Vec<u64> = get_random_grid(sudoku.dimensions);
     for i in 0..sudoku.dimensions {
-        let val: u32 = random_grid[i];
+        let val: u64 = random_grid[i];
         let row = grid_row * sudoku.grid_height + (i / sudoku.grid_width);
         let col = grid_col * sudoku.grid_width + (i % sudoku.grid_width);
         //println!("Init: {},{} = {}", row, col, val);
@@ -180,7 +180,7 @@ fn try_remove(sudoku: &mut sudoku::Sudoku, row: usize, col: usize) {
     let utilized = utilized_grid | utilized_row | utilized_col;
 
     for i in 0..charset_len {
-        let binary: u32 = 1 << i;
+        let binary: u64 = 1 << i;
         if tmp == binary {
             // This is the correct sudoku, no need to validate.
             continue;

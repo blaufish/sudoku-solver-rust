@@ -1,9 +1,9 @@
-pub const MAX_GRID_DIMENSIONS: usize = 5;
+pub const MAX_GRID_DIMENSIONS: usize = 6;
 pub const MAX_DIMENSIONS: usize = MAX_GRID_DIMENSIONS * MAX_GRID_DIMENSIONS;
 
 #[derive(Clone)]
 pub struct Sudoku {
-    pub board: [[u32; MAX_DIMENSIONS]; MAX_DIMENSIONS],
+    pub board: [[u64; MAX_DIMENSIONS]; MAX_DIMENSIONS],
     pub dimensions: usize,
     pub grid_height: usize,
     pub grid_width: usize,
@@ -26,7 +26,7 @@ impl Sudoku {
         }
     }
     fn set_c(&mut self, row: usize, col: usize, c: char) {
-        let mut binary: u32 = 1;
+        let mut binary: u64 = 1;
         for cc in self.character_set.chars() {
             if cc == c {
                 self.board[row][col] = binary;
@@ -37,7 +37,7 @@ impl Sudoku {
     }
     pub fn get_c(&self, row: usize, col: usize) -> char {
         let val = self.board[row][col];
-        let mut binary: u32 = 1;
+        let mut binary: u64 = 1;
         for cc in self.character_set.chars() {
             if val == binary {
                 return cc;
@@ -59,22 +59,22 @@ impl Sudoku {
             }
         }
     }
-    pub fn utilized_row(&self, row: usize) -> u32 {
-        let mut binary: u32 = 0;
+    pub fn utilized_row(&self, row: usize) -> u64 {
+        let mut binary: u64 = 0;
         for col in 0..self.dimensions {
             binary = binary | self.board[row][col];
         }
         return binary;
     }
-    pub fn utilized_col(&self, col: usize) -> u32 {
-        let mut binary: u32 = 0;
+    pub fn utilized_col(&self, col: usize) -> u64 {
+        let mut binary: u64 = 0;
         for row in 0..self.dimensions {
             binary = binary | self.board[row][col];
         }
         return binary;
     }
-    pub fn utilized_grid(&self, row: usize, col: usize) -> u32 {
-        let mut binary: u32 = 0;
+    pub fn utilized_grid(&self, row: usize, col: usize) -> u64 {
+        let mut binary: u64 = 0;
         let start_row: usize = (row / self.grid_height) * self.grid_height;
         let start_col: usize = (col / self.grid_width) * self.grid_width;
         let end_row = start_row + self.grid_height;
@@ -126,7 +126,7 @@ impl Sudoku {
             }
         }
         for row in 0..self.dimensions {
-            let mut utilized: u32 = 0;
+            let mut utilized: u64 = 0;
             for col in 0..self.dimensions {
                 if self.board[row][col] == 0 {
                     continue;
@@ -139,7 +139,7 @@ impl Sudoku {
             }
         }
         for col in 0..self.dimensions {
-            let mut utilized: u32 = 0;
+            let mut utilized: u64 = 0;
             for row in 0..self.dimensions {
                 if self.board[row][col] == 0 {
                     continue;
@@ -153,7 +153,7 @@ impl Sudoku {
         }
         for grid_h in 0..self.dimensions / self.grid_height {
             for grid_w in 0..self.dimensions / self.grid_width {
-                let mut utilized: u32 = 0;
+                let mut utilized: u64 = 0;
                 for pre_row in 0..self.grid_height {
                     for pre_col in 0..self.grid_width {
                         let row = grid_h * self.grid_height + pre_row;
