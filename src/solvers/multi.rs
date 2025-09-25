@@ -10,14 +10,10 @@ pub fn solve(sudoku: &mut sudoku::Sudoku) -> bool {
 fn restore(sudoku: &mut sudoku::Sudoku, table: &mut Table, restorepoint: &Vec<(usize, usize)>) {
     for (row, col) in restorepoint {
         let binary = sudoku.board[*row][*col];
-        let grid_row = row / sudoku.grid_height;
-        let grid_col = col / sudoku.grid_width;
 
         sudoku.board[*row][*col] = 0;
 
-        table.rows[*row] ^= binary;
-        table.cols[*col] ^= binary;
-        table.grids[grid_row][grid_col] ^= binary;
+        table.toggle_rc(*row, *col, binary);
     }
 }
 
@@ -58,9 +54,7 @@ fn solve_inner_inner(
 
         sudoku.board[row][col] = binary;
 
-        table.rows[row] ^= binary;
-        table.cols[col] ^= binary;
-        table.grids[grid_row][grid_col] ^= binary;
+        table.toggle_grgc_rc(grid_row, grid_col, row, col, binary);
 
         if solve_inner(sudoku, table) {
             return true;
@@ -68,9 +62,7 @@ fn solve_inner_inner(
 
         sudoku.board[row][col] = 0;
 
-        table.rows[row] ^= binary;
-        table.cols[col] ^= binary;
-        table.grids[grid_row][grid_col] ^= binary;
+        table.toggle_grgc_rc(grid_row, grid_col, row, col, binary);
     }
     false
 }
@@ -90,10 +82,7 @@ fn next_moves(sudoku: &sudoku::Sudoku, table: &Table) -> Option<(usize, usize, V
                         continue;
                     }
 
-                    let utilized_grid = table.grids[grid_row][grid_col];
-                    let utilized_row = table.rows[row];
-                    let utilized_col = table.cols[col];
-                    let utilized = utilized_row | utilized_col | utilized_grid;
+                    let utilized = table.get_utilized_grgc_rc(grid_row, grid_col, row, col);
                     let mut moves: Vec<u64> = Vec::new();
                     for i in 0..sudoku.dimensions {
                         let binary: u64 = 1 << i;
@@ -152,10 +141,7 @@ fn deduce_cell_locked_obvious(
                             continue;
                         }
 
-                        let utilized_grid = table.grids[grid_row][grid_col];
-                        let utilized_row = table.rows[row];
-                        let utilized_col = table.cols[col];
-                        let utilized = utilized_row | utilized_col | utilized_grid;
+                        let utilized = table.get_utilized_grgc_rc(grid_row, grid_col, row, col);
                         let mut binary: u64 = 0;
                         let mut count = 0;
                         for i in 0..sudoku.dimensions {
@@ -170,9 +156,7 @@ fn deduce_cell_locked_obvious(
                         if count == 1 {
                             //println!("Fill in! {} {} {}", row, col, binary);
                             sudoku.board[row][col] = binary;
-                            table.rows[row] ^= binary;
-                            table.cols[col] ^= binary;
-                            table.grids[grid_row][grid_col] ^= binary;
+                            table.toggle_grgc_rc(grid_row, grid_col, row, col, binary);
                             restorepoint.push((row, col));
                             done = false;
                         }

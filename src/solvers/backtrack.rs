@@ -11,16 +11,11 @@ pub fn solve(sudoku: &mut sudoku::Sudoku) -> bool {
 fn next_moves(sudoku: &sudoku::Sudoku, table: &Table) -> Option<(usize, usize, Vec<u64>)> {
     let mut result: Option<(usize, usize, Vec<u64>)> = None;
     for row in 0..sudoku.dimensions {
-        let utilized_row = table.rows[row];
         for col in 0..sudoku.dimensions {
             if sudoku.board[row][col] != 0 {
                 continue;
             }
-            let utilized_col = table.cols[col];
-            let grid_row = row / sudoku.grid_height;
-            let grid_col = col / sudoku.grid_width;
-            let utilized_grid = table.grids[grid_row][grid_col];
-            let utilized = utilized_row | utilized_col | utilized_grid;
+            let utilized = table.get_utilized_rc(row, col);
             let mut moves: Vec<u64> = Vec::new();
             for i in 0..sudoku.dimensions {
                 let binary: u64 = 1 << i;
@@ -81,9 +76,7 @@ fn solve_inner(sudoku: &mut sudoku::Sudoku, table: &mut Table) -> bool {
     let grid_col = col / sudoku.grid_width;
     for binary in values {
         sudoku.board[row][col] = binary;
-        table.rows[row] ^= binary;
-        table.cols[col] ^= binary;
-        table.grids[grid_row][grid_col] ^= binary;
+        table.toggle_grgc_rc(grid_row, grid_col, row, col, binary);
 
         let recursive_solved = solve_inner(sudoku, table);
         if recursive_solved {
@@ -91,9 +84,7 @@ fn solve_inner(sudoku: &mut sudoku::Sudoku, table: &mut Table) -> bool {
         }
 
         sudoku.board[row][col] = 0;
-        table.rows[row] ^= binary;
-        table.cols[col] ^= binary;
-        table.grids[grid_row][grid_col] ^= binary;
+        table.toggle_grgc_rc(grid_row, grid_col, row, col, binary);
     }
     false
 }
